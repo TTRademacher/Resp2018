@@ -128,7 +128,8 @@ alldata$airt.C  <- NA   # add air temperature [degC] to alldata data.frame
 alldata$pres.Pa <- NA   # add atmospheric pressure [Pa] to aalldat data.frame
 alldata$H2O.ppt <- NA   # add actual water vapour pressure [ppt] to alldata data.frame
 
-pdf("InitialRespiration.pdf")
+
+#pdf("InitialRespiration.pdf")
 # use a for loop, assigning "i" to represent each of the files in alldata 1 through "nrow", meaning all the rows
 for (i in  1:nrow(alldata)){ #the curly bracket starts the loop
   
@@ -137,7 +138,8 @@ for (i in  1:nrow(alldata)){ #the curly bracket starts the loop
   # read in the data file, and assign it to another generable variable "measurement"
   measurement<- read.csv(file = currentfile, header = TRUE, dec = ".")
   # to see what the data set looks like:
-  str(measurement)
+  measurement$RunTime<-measurement$RunTime*10
+  
   
   # Plot the CO2 concentrations over time
   #plot(x = measurement [,7], y = measurement [,8], main = paste("Soil Respiration:",alldata$treatment[i],'tree',alldata$tree[i],', chamber',alldata$chamber[i]),xlab = "time [s]", ylab = "CO2 concentration [ppm]")
@@ -148,8 +150,8 @@ for (i in  1:nrow(alldata)){ #the curly bracket starts the loop
   # record them in excel, then import as csv file
   setwd("~/Documents/HF REU/My Project/48HR")
 bounds<-read.csv(file = 'SoilResp2018_UpperLower.csv', header = TRUE)  
-lowerbound<-bounds[1,seq(2,ncol(bounds),2)]
-upperbound<-bounds[1,seq(3,ncol(bounds),2)]
+lowerbound<-bounds[1,seq(2,ncol(bounds),2)]*10
+upperbound<-bounds[1,seq(3,ncol(bounds),2)]*10
 
 path<-"~/Documents/HF REU/My Project/48HR/20180625_1300"
 setwd(path)
@@ -160,7 +162,7 @@ dat <- selectData (ds= measurement,
 
 } #ends the loop
 # end the pdf file 
-dev.off()
+#dev.off()
 
 
 
@@ -184,10 +186,10 @@ dat$airt.C  <- rep (airt.C,  length (dat [, 1]))   # add air temperature [degC] 
 dat$pres.Pa <- rep (pres.Pa, length (dat [, 1]))   # add atmospheric pressure [Pa] to aalldat data.frame
 dat$H2O.ppt <- dat$ea.Pa / (dat$pres.Pa - dat$ea.Pa) * 1.0e3   # add actual water vapour pressure [ppt] to alldata data.frame
 
-
+names(dat)[which(names(dat)=="CO2")]<-"CO2.ppm"
 # Correct CO2 concentration for water vapour
 dat$CO2.dry <- corrConcDilution (dat, 
-                                 colConc   = 'CO2',
+                                 colConc   = 'CO2.ppm',
                                  colVapour = 'H2O.ppt')
 
 # Calculate chamber flux for entire timeseries
@@ -200,6 +202,13 @@ resFit <- calcClosedChamberFlux (dat,
                                  volume      = chamberGeometry [1],
                                  area        = chamberGeometry [2])
 
+fluxdata[[i]]<-resFit
+alldata$flux[i]<-resFit$flux
+alldata$sdFlux[i]<-resFit$sdFlux
+alldata$ea.Pa[i]   <- ea.Pa   # add actual water vapour pressure [Pa] to alldata data.frame
+alldata$airt.C[i]  <- airt.C   # add air temperature [degC] to alldata data.frame
+alldata$pres.Pa[i] <- pres.Pa   # add atmospheric pressure [Pa] to aalldat data.frame
+alldata$H2O.ppt[i] <- ea.Pa / (pres.Pa - ea.Pa) * 1.0e3   
 
 
 #flux units are micromol/sec. can use conver_mmol function to get grams/day
