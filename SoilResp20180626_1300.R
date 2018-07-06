@@ -139,74 +139,8 @@ for (i in  1:nrow(alldata)){ #the curly bracket starts the loop
   # to see what the data set looks like:
   measurement$RunTime<-measurement$RunTime*10
   
-  
   # Plot the CO2 concentrations over time
   plot(x = measurement [,7], y = measurement [,8], main = paste("Soil Respiration:",'tree',alldata$tree[i],'chamber',alldata$chamber[i],alldata$timestamp[i]),xlab = "time [s]", ylab = "CO2 concentration [ppm]")
-  #Sys.sleep(0.5)
+
   
 }
-#look through each graph and set upper and lower bounds. 
-  # record them in excel, then import as csv file
-#  setwd("~/Documents/HF REU/My Project/48HR")
-#bounds<-read.csv(file = 'SoilResp2018_UpperLower.csv', header = TRUE)  
-#lowerbound<-bounds[1,seq(2,ncol(bounds),2)]*10
-#upperbound<-bounds[1,seq(3,ncol(bounds),2)]*10
-
-#path<-"~/Documents/HF REU/My Project/48HR/20180625_1900"
-#setwd(path)
-
-#dat <- selectData (ds= measurement,
-#                    lowerBound = lowerbound[i],
- #                   upperBound = upperbound[i]) 
-#title(main = paste("Soil Respiration:",'tree',alldata$tree[i],'chamber',alldata$chamber[i],alldata$timestamp[i]))
- #ends the loop
-# end the pdf file 
-#dev.off()
-
-# Determine which measurement to use, N.B. data is named after the time at the end of the 15 minute interval
-upper_bound <- as.POSIXct (x      = (round (as.numeric (median (alldata$timestamp [i]))/
-                                             (15 * 60)) * (15 * 60) + (15 * 60)), format = '%Y-%m-%d %H:%M:%S',
-                           origin = as.POSIXct ("1970-01-01", format = '%Y-%m-%d', tz = 'UTC'), 
-                           tz = 'EST')
-
-pres.Pa <- met_HF$bar  [met_HF$TIMESTAMP == upper_bound] * 100.0 # Pa
-airt.C  <- met_HF$airt [met_HF$TIMESTAMP == upper_bound]         # deg C
-rh.per  <- met_HF$rh   [met_HF$TIMESTAMP == upper_bound]         # %
-
-
-# Calculate saturation water vapour pressure (esat) to convert relative humidity
-es.Pa <- 0.61078 * exp ((17.269 * airt.C) / (237.3 + airt.C)) * 1000 # saturated water pressure [Pa]
-ea.Pa <- es.Pa * rh.per / 100.0                                         # get actual water vapour pressure [Pa]
-dat$ea.Pa   <- rep (ea.Pa,   length (dat [, 1]))   # add actual water vapour pressure [Pa] to alldata data.frame
-dat$airt.C  <- rep (airt.C,  length (dat [, 1]))   # add air temperature [degC] to alldata data.frame
-dat$pres.Pa <- rep (pres.Pa, length (dat [, 1]))   # add atmospheric pressure [Pa] to aalldat data.frame
-dat$H2O.ppt <- dat$ea.Pa / (dat$pres.Pa - dat$ea.Pa) * 1.0e3   # add actual water vapour pressure [ppt] to alldata data.frame
-
-names(dat)[which(names(dat)=="CO2")]<-"CO2.ppm"
-# Correct CO2 concentration for water vapour
-dat$CO2.dry <- corrConcDilution (dat, 
-                                 colConc   = 'CO2.ppm',
-                                 colVapour = 'H2O.ppt')
-
-# Calculate chamber flux for entire timeseries
-
-resFit <- calcClosedChamberFlux (dat,
-                                 colConc     = 'CO2.dry',
-                                 colTime     = 'RunTime', # redundant
-                                 colTemp     = 'airt.C',
-                                 colPressure = 'pres.Pa',
-                                 volume      = chamberGeometry [1],
-                                 area        = chamberGeometry [2]) #give it a list!!
-
-fluxdata[[i]]<-resFit
-alldata$flux[i]<-resFit$flux
-alldata$sdFlux[i]<-resFit$sdFlux
-alldata$ea.Pa[i]   <- ea.Pa   # add actual water vapour pressure [Pa] to alldata data.frame
-alldata$airt.C[i]  <- airt.C   # add air temperature [degC] to alldata data.frame
-alldata$pres.Pa[i] <- pres.Pa   # add atmospheric pressure [Pa] to aalldat data.frame
-alldata$H2O.ppt[i] <- ea.Pa / (pres.Pa - ea.Pa) * 1.0e3   
-
-}
-
-
-#flux units are micromol/sec. can use conver_mmol function to get grams/day
