@@ -128,12 +128,7 @@ alldata$H2O.ppt[ifile] <- ea.Pa / (pres.Pa - ea.Pa) * 1.0e3
 
 #closeAllConnections()
 }
-
-
-
 #use row bind - combine two dataframes
-
-#if it's new 
 
 #dev.off()
 #flux units are micromol/sec. can use conver_mmol function to get grams/day
