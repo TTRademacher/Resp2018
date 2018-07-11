@@ -1,4 +1,4 @@
-#this script will produce plots + upper and lower bounds, calculating the flux (respiration rate) for each chamber.
+#this script will combine multiple sessions to produce respiration rates over time
 
 #what session do you want to look at? 
 date_time <- "20180625_1300"
@@ -38,7 +38,7 @@ samplingDate  <- as.POSIXct (datestr[1], format = '%Y%m%d')
 #samplingDate  <- as.POSIXct (datestr, format = '%Y%m%d') 
 
 # put all of that together into a data frame, seperating all the elements into nice columns :)
-sessiondata<-data.frame(file=myfiles,treatment=treatment,tree=tree,chamber=chamber,timestamp=timestamp,stringsAsFactors = FALSE)
+alldata<-data.frame(file=myfiles,treatment=treatment,tree=tree,chamber=chamber,timestamp=timestamp,stringsAsFactors = FALSE)
 
 # We need to account for other factors - humidity, atmospheric temperature, and pressure)
 # Get appropriate meterological data from the harvard forest website
@@ -56,21 +56,21 @@ met_HF$TIMESTAMP <- as.POSIXct (met_HF$datetime,
                                 tz = 'EST') 
 
 fluxdata=list()
-sessiondata$flux<-NA
-sessiondata$sdFlux<-NA
-sessiondata$ea.Pa   <- NA   # add actual water vapour pressure [Pa] to alldata data.frame (blank columns)
-sessiondata$airt.C  <- NA   # add air temperature [degC] to alldata data.frame
-sessiondata$pres.Pa <- NA   # add atmospheric pressure [Pa] to aalldat data.frame
-sessiondata$H2O.ppt <- NA   # add actual water vapour pressure [ppt] to alldata data.frame
+alldata$flux<-NA
+alldata$sdFlux<-NA
+alldata$ea.Pa   <- NA   # add actual water vapour pressure [Pa] to alldata data.frame (blank columns)
+alldata$airt.C  <- NA   # add air temperature [degC] to alldata data.frame
+alldata$pres.Pa <- NA   # add atmospheric pressure [Pa] to aalldat data.frame
+alldata$H2O.ppt <- NA   # add actual water vapour pressure [ppt] to alldata data.frame
 
 
 #pdf("InitialRespiration.pdf")
-# use a 'for loop', assigning "i" to represent each of the files in sessiondata 1 through "nrow", meaning all the rows
+# use a 'for loop', assigning "i" to represent each of the files in alldata 1 through "nrow", meaning all the rows
 # Loop through flux puppy files 
-for (ifile in  1:nrow(sessiondata)){ #the curly bracket starts the loop
+for (ifile in  1:nrow(alldata)){ #the curly bracket starts the loop
   
   #assign each of the files to a general variable "currentfile"
-  currentfile<-sessiondata$file[ifile]
+  currentfile<-alldata$file[ifile]
   # read in the data file, and assign it to another generable variable "measurement"
   measurement<- read.csv(file = currentfile, header = TRUE, dec = ".")
   # to see what the data set looks like:
@@ -80,10 +80,10 @@ for (ifile in  1:nrow(sessiondata)){ #the curly bracket starts the loop
 dat <- selectData (ds= measurement,
                     lowerBound = lowerbound[ifile],
                     upperBound = upperbound[ifile]) 
-title(main = paste("Soil Respiration:",'tree',sessiondata$tree[ifile],'chamber',sessiondata$chamber[ifile],sessiondata$timestamp[ifile]))
+title(main = paste("Soil Respiration:",'tree',alldata$tree[ifile],'chamber',alldata$chamber[ifile],alldata$timestamp[ifile]))
 
 # to determine which weather measurements to use, we'll find 15 minute interval (consecutive; 12:29 = 12:30, 12:31=12:45)
-next_interval <- as.POSIXct (x = (round (as.numeric (median (sessiondata$timestamp [ifile]))/
+next_interval <- as.POSIXct (x = (round (as.numeric (median (alldata$timestamp [ifile]))/
                                              (15 * 60)) * (15 * 60) + (15 * 60)), format = '%Y-%m-%d %H:%M:%S',
                            origin = as.POSIXct ("1970-01-01", format = '%Y-%m-%d', tz = 'UTC'), 
                            tz = 'EST')
@@ -96,10 +96,10 @@ rh.per  <- met_HF$rh   [met_HF$TIMESTAMP == next_interval]         # %
 # Calculate saturation water vapour pressure (esat) to convert relative humidity
 es.Pa <- 0.61078 * exp ((17.269 * airt.C) / (237.3 + airt.C)) * 1000 # saturated water pressure [Pa]
 ea.Pa <- es.Pa * rh.per / 100.0                                         # get actual water vapour pressure [Pa]
-dat$ea.Pa   <- rep (ea.Pa,   length (dat [, 1]))   # add actual water vapour pressure [Pa] to sessiondata data.frame
-dat$airt.C  <- rep (airt.C,  length (dat [, 1]))   # add air temperature [degC] to sessiondata data.frame
+dat$ea.Pa   <- rep (ea.Pa,   length (dat [, 1]))   # add actual water vapour pressure [Pa] to alldata data.frame
+dat$airt.C  <- rep (airt.C,  length (dat [, 1]))   # add air temperature [degC] to alldata data.frame
 dat$pres.Pa <- rep (pres.Pa, length (dat [, 1]))   # add atmospheric pressure [Pa] to aalldat data.frame
-dat$H2O.ppt <- dat$ea.Pa / (dat$pres.Pa - dat$ea.Pa) * 1.0e3   # add actual water vapour pressure [ppt] to sessiondata data.frame
+dat$H2O.ppt <- dat$ea.Pa / (dat$pres.Pa - dat$ea.Pa) * 1.0e3   # add actual water vapour pressure [ppt] to alldata data.frame
 
 names(dat)[which(names(dat)=="CO2")]<-"CO2.ppm"
 # Correct CO2 concentration for water vapour
@@ -118,14 +118,22 @@ resFit <- calcClosedChamberFlux (dat,
                                  area        = dimensions$respArea_m2[ifile])
 
 fluxdata[[ifile]]<-resFit
-sessiondata$flux[ifile]<-resFit$flux
-sessiondata$sdFlux[ifile]<-resFit$sdFlux
-sessiondata$ea.Pa[ifile]   <- ea.Pa   # add actual water vapour pressure [Pa] to alldata data.frame
-sessiondata$airt.C[ifile]  <- airt.C   # add air temperature [degC] to alldata data.frame
-sessiondata$pres.Pa[ifile] <- pres.Pa   # add atmospheric pressure [Pa] to aalldat data.frame
-sessiondata$H2O.ppt[ifile] <- ea.Pa / (pres.Pa - ea.Pa) * 1.0e3   
+alldata$flux[ifile]<-resFit$flux
+alldata$sdFlux[ifile]<-resFit$sdFlux
+alldata$ea.Pa[ifile]   <- ea.Pa   # add actual water vapour pressure [Pa] to alldata data.frame
+alldata$airt.C[ifile]  <- airt.C   # add air temperature [degC] to alldata data.frame
+alldata$pres.Pa[ifile] <- pres.Pa   # add atmospheric pressure [Pa] to aalldat data.frame
+alldata$H2O.ppt[ifile] <- ea.Pa / (pres.Pa - ea.Pa) * 1.0e3   
+
+
 }
 
+if(ifile==1){
+masterdata<- sessiondata,
+else masterdata<- rbind(masterdata,sessiondata)
+}
+
+#use row bind - combine two dataframes
 
 #dev.off()
 #flux units are micromol/sec. can use conver_mmol function to get grams/day
