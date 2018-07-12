@@ -27,9 +27,10 @@ if(substr(myfile,1,14)=="G-SoilResp2018"){
    tree<- as.numeric(substring(myfile,16,17))
    #isolate the chamber
    chamber<- as.numeric(substring(myfile,19,19))
-   chamberGeometry <- calcChamberGeometryCylinder (radius = 0.0508,
-                                                  height = 0.1016, #heights need to vary #make a function that spits out the volume into sessiondata
+   chamberGeometry <- calcChamberGeometryCylinder (radius = 0.1000,
+                                                  height = 0.045, #heights need to vary #make a function that spits out the volume into sessiondata
                                                   taper  = 1.0)
+   ititle<-"SOIL RESP"
    
   }else if (substr(myfile,1,9)=="G-Exp2018"){
       #isolate the tree number from the file name
@@ -39,6 +40,7 @@ if(substr(myfile,1,14)=="G-SoilResp2018"){
       chamberGeometry <- calcChamberGeometryCylinder (radius = 0.0508,
                                                       height = 0.1016, #heights need to vary 
                                                       taper  = 1.0)
+      ititle<-"STEM RESP"
   }
 
 #or we can isolate the different variables in the file name using a split function and an indicator
@@ -85,7 +87,7 @@ met_HF$TIMESTAMP <- as.POSIXct (met_HF$datetime,
   # Plot the CO2 concentrations over time
   plot(x = measurement [,7], 
        y = measurement [,8], 
-       main = paste("Respiration",'tree',sessiondata$tree[i],'chamber',sessiondata$chamber[i],sessiondata$timestamp[i]),
+       main = paste(ititle,'tree',sessiondata$tree[i],'chamber',sessiondata$chamber[i],sessiondata$timestamp[i]),
        xlab = "time [s]", 
        ylab = "CO2 concentration [ppm]")
   
