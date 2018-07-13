@@ -1,48 +1,52 @@
-#this script allows you to input the desired date and time and produce a graph for each flux puppy file 
-#then you can manually/visually pick lower and upper bounds, recording them in a spreadsheet to be read in later
+#this script lets you input the desired date & time to produce a graph per fluxpuppy file 
+#then you can manually/visually pick lower and upper bounds + record them in a spreadsheet
 
-#What session do you want to make bounds for? input date and time here
+#What session do you want to make bounds for? input date and time here:
+#--------------------------------------------------------------------------------------#
 date_time <- "20180625_1300"
 
-#add libraries and sources
-require(segmented)
-require(tibble)
+#add libraries, sources, read in necessary files
+#--------------------------------------------------------------------------------------#
+require(segmented); require(tibble)
 setwd ('/Users/bdavis/Documents/HF REU/My Project/RespChamberProc/')
 fileNames <- list.files (pattern = "*.R") [-c (9:10)]
 res <- sapply (fileNames, source); rm (res)
-
-#set path - change based on your filing system
 path <- paste("~/Documents/HF REU/My Project/48HR/",date_time, sep='')
 setwd(path)
 
-# make sure you draw upon only csv files (in case you save something else in there, like .R or html)
 myfiles<-list.files(getwd(),"csv")
 myfiles<-myfiles[substring(myfiles,1,1)=="G"]
 
-#this conditional statement will seperates Soil Resp vs Stem respiration (specific to our 2018 experiment)
-for (i in  1:length(myfiles)) {
-  myfile<-myfiles[i]
-if(substr(myfile,1,14)=="G-SoilResp2018"){
-     #isolate the tree number from the file name
-   tree<- as.numeric(substring(myfile,16,17))
-   #isolate the chamber
-   chamber<- as.numeric(substring(myfile,19,19))
-   chamberGeometry <- calcChamberGeometryCylinder (radius = 0.1000,
-                                                  height = 0.045, #heights need to vary #make a function that spits out the volume into sessiondata
-                                                  taper  = 1.0)
-   ititle<-"SOIL RESP"
-   
-  }else if (substr(myfile,1,9)=="G-Exp2018"){
-      #isolate the tree number from the file name
-      tree<- as.numeric(substring(myfile,11,12))
-      #isolate the chamber
-      chamber<- as.numeric(substring(myfile,16,16))
-      chamberGeometry <- calcChamberGeometryCylinder (radius = 0.0508,
-                                                      height = 0.1016, #heights need to vary 
-                                                      taper  = 1.0)
-      ititle<-"STEM RESP"
-  }
+soilH<-read.csv("../SoilChamberHeights.csv",header=F)
+stemH<-read.csv("../StemChamberHeights.csv",header=F)
+names (soilH)<- c ("tree",'chamber','h1','h2','h3','h4','havg')
+names (stemH)<- c ('tree','chamber','h1','h2','h3','h4','havg')
 
+#this loop will seperates Soil Resp vs Stem Resp (specific to our 2018 experiment)
+#--------------------------------------------------------------------------------------#
+for (i in  1:length(myfiles)) {
+  myfile<- myfiles[i]
+  if(substr(myfile,1,14)== "G-SoilResp2018"){
+
+     ititle<-"SOIL RESP" 
+     tree<- as.numeric(substring(myfile,16,17))
+     chamber<- as.numeric(substring(myfile,19,19))
+     avgh<- soilH$havg [soilH$chamber == chamber & soilH$tree == tree]
+     radius<- 0.1016 
+   
+    }else if (substr(myfile,1,9)=="G-Exp2018"){
+
+      ititle<-"STEM RESP"
+      tree<- as.numeric(substring(myfile,11,12))
+      chamber<- as.numeric(substring(myfile,16,16))
+      avgh= stemH$havg [stemH$chamber == chamber & stemH$tree == tree]
+      radius= 0.0508
+    }
+  
+#--------------------------------------------------------------------------------------#
+chamberGeometry <- calcChamberGeometryCylinder (radius = radius,
+                                                  height = avgh, #heights need to vary 
+                                                  taper  = 1.0)
 #or we can isolate the different variables in the file name using a split function and an indicator
   #strsplit(myfiles,'_')
 
