@@ -3,7 +3,7 @@
 
 #What session do you want to make bounds for? input date and time here:
 #--------------------------------------------------------------------------------------#
-date_time <- "20180626_1300"
+date_time <- "20180625_1300"
 
 #add libraries, sources, read in necessary files
 #--------------------------------------------------------------------------------------#
