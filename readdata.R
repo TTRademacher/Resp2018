@@ -1,8 +1,7 @@
 #This is a script that lets us read in specific preprocess measurement data necessary for calculating respiration rates for a specific timestamp
 
 #install and load necessary packages
-require(segmented)
-require(tibble)
+require(segmented); require(tibble)
 
 # add the library 'RespChamberProc' package by sourcing 
 setwd ('/Users/bdavis/Documents/HF REU/My Project/RespChamberProc/')
@@ -13,25 +12,36 @@ res <- sapply (fileNames, source); rm (res)
 setwd("~/Documents/HF REU/My Project/48HR")
 bounds<-read.csv(file = 'SoilResp2018_UpperLower.csv', header = TRUE) 
 
-lowerbound<-bounds[bounds$TIMESTAMP==date_time,seq(2,ncol(bounds),2)]*10
-upperbound<-bounds[bounds$TIMESTAMP==date_time,seq(3,ncol(bounds),2)]*10 #this is multiplied by a factor of 10 b/c the 'RunTime' needed to be *10 sometimes, in order to exceed the 60 second requirment in the resFit function 
+lowerbound<-bounds[bounds$TIMESTAMP==date_time,seq(2,ncol(bounds),2)]
+upperbound<-bounds[bounds$TIMESTAMP==date_time,seq(3,ncol(bounds),2)] #this is multiplied by a factor of 10 b/c the 'RunTime' needed to be *10 sometimes, in order to exceed the 60 second requirment in the resFit function 
 
 
 #CHAMBER DIMENTIONS (unique to each chamber)
-#Soil
-setwd("~/Documents/HF REU/My Project/48HR")
-dimensions<-read.csv(file = 'SoilChamberVolume.csv', header = FALSE) 
-names(dimensions)<-c('tree','chamber','h1_cm', 'h2_cm', 'h3_cm', 'h4_cm','havg_cm')
-dimensions$havg_m<-dimensions$havg_cm/100
+
+soilH<-read.csv("SoilChamberHeights.csv",header=FALSE) 
+stemH<-read.csv("StemChamberHeights.csv",header=FALSE)
+names (soilH)<- c("tree",'chamber','h1_cm','h2_cm','h3_cm','h4_cm','havg_cm')
+names (stemH)<- c('tree','chamber','h1_cm','h2_cm','h3_cm','h4_cm','havg_cm')
+soilH$havg_m <- soilH$havg_cm/100
+stemH$havg_m <- stemH$havg_cm/100
+
+soilH$vol_m3 <- calcChamberGeometryCylinder (radius = 0.1016,
+                                                  height = soilH$havg_m,
+                                                  taper  = 1.0) [-(dim(soilH)[1]+1)] #remove the last value 
+
+soilH$respArea_m2 <- rep(calcChamberGeometryCylinder (radius = 0.1016,
+                                                           height = soilH$havg_m,
+                                                           taper  = 1.0) [dim(soilH)[1]+1], length(soilH[,1]))
+
+stemH$vol_m3 <- calcChamberGeometryCylinder (radius = 0.0508,
+                                             height = stemH$havg_m,
+                                             taper  = 1.0) [-(dim(stemH)[1]+1)] #remove the last value 
+
+stemH$respArea_m2 <- rep(calcChamberGeometryCylinder (radius = 0.0508,
+                                                      height = stemH$havg_m,
+                                                      taper  = 1.0) [dim(stemH)[1]+1], length(stemH[,1]))
 
 
-dimensions$vol_m3 <- calcChamberGeometryCylinder (radius = 0.0508,
-                                                height = dimensions$havg_m,
-                                                taper  = 1.0) [-(dim(dimensions)[1]+1)] #remove the last value 
-
-dimensions$respArea_m2 <- rep(calcChamberGeometryCylinder (radius = 0.0508,
-                                                       height = dimensions$havg_m,
-                                                       taper  = 1.0) [dim(dimensions)[1]+1], length(dimensions[,1]))
 
 # Read in a function that will plot *truncated* data (allows you to visually get rid of the noise in plots)
 #Choose the start and end time (allows you to truncate the data to eliminate noise)

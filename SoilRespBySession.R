@@ -1,17 +1,17 @@
-#this script will produce plots + upper and lower bounds, calculating the flux (respiration rate) for each chamber.
+#this script will plot upper/lower bounds & calculate the flux (resp rate) of ea. chamber
 
 #what session do you want to look at? 
+#--------------------------------------------------------------------------------------#
 date_time <- "20180625_1300"
 
 #load source preprocess data (including chamber volume and bounds, plotting function)
-path<-"~/Documents/HF REU/My Project/48HR"
+#--------------------------------------------------------------------------------------#
+path<-"~/Documents/GitHub/Resp2018"
 setwd(path)
-source('readdata.R')
+source('Plots_chooseBounds.R')
 
 ######### MAIN CODE #########
-
-# let's break down the file name - flux puppy saved the file w/ the experiment name, the ID, the date, and the time. 
-# First, locate the files
+#--------------------------------------------------------------------------------------#
 path<-paste("~/Documents/HF REU/My Project/48HR/",date_time, sep='')
 setwd(path)
 # make sure you draw upon only csv files (in case you save something else in there, like .R or html)
