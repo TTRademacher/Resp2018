@@ -1,0 +1,30 @@
+getwd
+getwd()
+setwd(~/Desktop/DavisScreenP18/G)
+setwd(~/Desktop)
+setwd('~/Desktop/DavisScreenP18/G)
+setwd ('/Users/bdavis/Documents/HF REU/My Project/RespChamberProc/')
+debug.init("Plots_chooseBounds.R")
+library(ProvDebugR)
+library(provDebugR)
+debug.init("Plots_chooseBounds.R")
+##-ddg-- Tue Jul 17 10:37:53 2018 ------##
+setwd(~/Documents/GitHub/Resp2018/Plots_chooseBounds.R)
+setwd("~/Documents/GitHub/Resp2018/Plots_chooseBounds.R"")
+debug.init("Plots_chooseBounds.R")
+setwd("~/Documents/GitHub/Resp2018/Plots_chooseBounds.R"")
+setwd("~/Documents/GitHub/Resp2018/Plots_chooseBounds.R")
+setwd("/Users/bdavis/Documents/GitHub/Resp2018/Plots_chooseBounds.R")
+setwd ('/Users/bdavis/Documents/GitHub/Resp2018/Plots_chooseBounds.R')
+getwd
+getwd()
+setwd("~/Documents/GitHub/Resp2018/Plots_chooseBounds.R")
+setwd("~/Documents/GitHub/Resp2018/")
+debug.init("Plots_chooseBounds.R")
+##-ddg-- Tue Jul 17 10:45:16 2018 ------##
+source('~/Documents/GitHub/Resp2018/Plots_chooseBounds.R', echo=TRUE)
+traceback()
+setwd("~/Documents/GitHub/Resp2018/Plots_chooseBounds.R")
+setwd("~/Documents/GitHub/Resp2018")
+ddg.run("Plots_chooseBounds.R")
+##-ddg-- Tue Jul 17 10:51:43 2018 ------##

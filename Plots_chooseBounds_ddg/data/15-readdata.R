@@ -4,7 +4,7 @@
 require(segmented); require(tibble)
 
 # add the library 'RespChamberProc' package by sourcing 
-setwd ('/Users/bdavis/Documents/HF REU/My Project/48HR/source/RespChamberProc/')
+setwd ('/Users/bdavis/Documents/HF REU/My Project/RespChamberProc/')
 fileNames <- list.files (pattern = "*.R") [-c (9:10)]
 res <- sapply (fileNames, source); rm (res)
 

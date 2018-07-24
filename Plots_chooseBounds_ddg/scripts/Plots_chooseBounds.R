@@ -3,12 +3,12 @@
 
 #What session do you want to make bounds for? input date and time here:
 #--------------------------------------------------------------------------------------#
-if (!exists ('date_time')) {date_time <- "20180627_0700"}
+if (!exists ('date_time')) {date_time <- "20180625_1300"}
 
 #add libraries, sources, read in necessary files
 #--------------------------------------------------------------------------------------#
 require(segmented); require(tibble)
-setwd ('/Users/bdavis/Documents/GitHub/source/RespChamberProc/')
+setwd ('/Users/bdavis/Documents/HF REU/My Project/RespChamberProc/')
 fileNames <- list.files (pattern = "*.R") [-c (9:10)]
 res <- sapply (fileNames, source); rm (res)
 
@@ -16,7 +16,7 @@ path<-"~/Documents/GitHub/Resp2018"
 setwd(path)
 source('readdata.R')
 
-path <- paste("~/Documents/HF REU/My Project/48HR/data/",date_time, sep='')
+path <- paste("~/Documents/HF REU/My Project/48HR/",date_time, sep='')
 setwd(path)
 
 myfiles<-list.files(getwd(),"csv")

@@ -2,13 +2,86 @@
 
 #what session do you want to look at? 
 #--------------------------------------------------------------------------------------#
-date_time <- "20180627_1300"
+date_time <- "20180627_0700"
 
 #load source preprocess data (including chamber volume and bounds, plotting function)
 #--------------------------------------------------------------------------------------#
+require(segmented); require(tibble)
 path<-"~/Documents/GitHub/Resp2018"
+setwd(path); source('readdata.R')
+path <- paste("~/Documents/HF REU/My Project/48HR/data/",date_time, sep='')
 setwd(path)
-source('Plots_chooseBounds.R')
+
+myfiles<-list.files(getwd(),"csv")
+myfiles<-myfiles[substring(myfiles,1,14)=="G-SoilResp2018"]
+
+tmp<-unlist(strsplit(myfiles,'_'))
+datestr<-tmp[seq(3,length(tmp),4)]
+timestr<-tmp[seq(4,length(tmp),4)]
+timestr<-substring(timestr,1,nchar(timestr)-4)
+timestamp<-strptime(paste(datestr,timestr),"%Y%m%d %H%M%S")
+
+tree<- as.numeric(substring(myfiles,16,17))
+chamber<- as.numeric(substring(myfiles,19,19))
+
+while (length (chamber) != length (soilH$chamber)) {
+  index   <- which (soilH$chamber != chamber) [1]
+  chamber <- c (chamber [1:(index-1)], NA, chamber [index:(length (chamber))])
+  tree    <- c (tree    [1:(index-1)], NA, tree    [index:(length (tree))])
+  myfiles<- c (myfiles [1:(index-1)], NA, myfiles [index:(length (myfiles))])
+  timestamp<- c c (timestamp [1:(index-1)], NA, timestamp [index:(length (timestamp))])
+  
+}
+avgh_cm<- soilH$havg_cm [soilH$chamber == chamber & soilH$tree == tree]
+radius<- 0.1016 
+
+chamberGeometry <- calcChamberGeometryCylinder (radius = radius,
+                                                height = avgh_cm, 
+                                                taper  = 1.0)
+
+treatment<-rep("chilling",length(tree)) #name them all 'chilling'
+treatment[tree<=10]<-"compress" #names any tree less than or equal to 10 'compress'
+treatment[tree<=5]<-"control" #names any tree less than or equal to 5 'control'
+
+
+
+
+#this samplying date will be used to extract the meteoroligical data
+samplingDate  <- as.POSIXct (datestr[1], format = '%Y%m%d')
+
+#put all of that together into a data frame, seperating all the elements into columns 
+#--------------------------------------------------------------------------------------#
+sessiondata<-data.frame(file=myfiles,
+                        treatment=treatment,
+                        tree=tree,
+                        chamber=chamber,
+                        timestamp=timestamp,
+                        stringsAsFactors = FALSE)
+
+# Pull appropriate meterological data from the HF website to account for those factors
+#--------------------------------------------------------------------------------------#
+weatherdate<-Sys.Date()
+weatherdate<-paste(substring(weatherdate,1,7),'01',sep='-')
+
+if (samplingDate < as.POSIXct (weatherdate, format = '%Y-%m-%d')) {
+  met_HF <- read.csv (file = url ('http://harvardforest.fas.harvard.edu/sites/harvardforest.fas.harvard.edu/files/data/p00/hf001/hf001-10-15min-m.csv'))
+} else if (samplingDate >= as.POSIXct (weatherdate, format = '%Y-%m-%d')) {
+  met_HF <- read.csv (file = url ('http://harvardforest.fas.harvard.edu/sites/harvardforest.fas.harvard.edu/files/weather/qfm.csv'))
+}
+met_HF$TIMESTAMP <- as.POSIXct (met_HF$datetime, 
+                                format = '%Y-%m-%dT%H:%M',
+                                tz = 'EST') 
+
+# Set up the data table "sessiondata" to hold all the variables
+#--------------------------------------------------------------------------------------#
+
+fluxdata=list()
+sessiondata$flux<-NA
+sessiondata$sdFlux<-NA
+sessiondata$ea.Pa   <- NA  
+sessiondata$airt.C  <- NA  
+sessiondata$pres.Pa <- NA 
+sessiondata$H2O.ppt <- NA   
 
 #Loop through each measurement in the session 
 #--------------------------------------------------------------------------------------#
@@ -32,20 +105,13 @@ next_interval <- as.POSIXct (x = (round (as.numeric (median (sessiondata$timesta
                            tz = 'EST')
 
 
-fluxdata=list()
-sessiondata$flux<-NA
-sessiondata$sdFlux<-NA
-sessiondata$ea.Pa   <- NA   # add actual water vapour pressure [Pa] to alldata data.frame (blank columns)
-sessiondata$airt.C  <- NA   # add air temperature [degC] to alldata data.frame
-sessiondata$pres.Pa <- NA   # add atmospheric pressure [Pa] to aalldat data.frame
-sessiondata$H2O.ppt <- NA   # add actual water vapour pressure [ppt] to alldata data.frame
-
 pres.Pa <- met_HF$bar  [met_HF$TIMESTAMP == next_interval] * 100.0 # Pa
 airt.C  <- met_HF$airt [met_HF$TIMESTAMP == next_interval]         # deg C
 rh.per  <- met_HF$rh   [met_HF$TIMESTAMP == next_interval]         # %
 
 
 # Calculate saturation water vapour pressure (esat) to convert relative humidity
+#--------------------------------------------------------------------------------------#
 es.Pa <- 0.61078 * exp ((17.269 * airt.C) / (237.3 + airt.C)) * 1000 # saturated water pressure [Pa]
 ea.Pa <- es.Pa * rh.per / 100.0                                         # get actual water vapour pressure [Pa]
 dat$ea.Pa   <- rep (ea.Pa,   length (dat [, 1]))   # add actual water vapour pressure [Pa] to sessiondata data.frame
@@ -60,15 +126,17 @@ dat$CO2.dry <- corrConcDilution (dat,
                                  colVapour = 'H2O.ppt')
 
 # Calculate chamber flux for entire timeseries
-
+#--------------------------------------------------------------------------------------#
 resFit <- calcClosedChamberFlux (dat,
                                  colConc     = 'CO2.dry',
                                  colTime     = 'RunTime', # redundant
                                  colTemp     = 'airt.C',
                                  colPressure = 'pres.Pa',
-                                 volume      = dimensions$vol_m3[ifile],
-                                 area        = dimensions$respArea_m2[ifile])
+                                 volume      = soilH$vol_m3[ifile],
+                                 area        = soilH$respArea_m2[ifile])
 
+#Put all the data into the table 'sessiondata" you created earlier
+#--------------------------------------------------------------------------------------#
 fluxdata[[ifile]]<-resFit
 sessiondata$flux[ifile]<-resFit$flux
 sessiondata$sdFlux[ifile]<-resFit$sdFlux
