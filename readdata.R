@@ -56,8 +56,8 @@ selectData <- function (ds = alldata, colConc = 'CO2', colTime = 'RunTime', lowe
   cut <- ds [(ds [[colTime]] < lowerBound) | 
                (ds [[colTime]] > upperBound), ]
   # plot data
-  plot (x = measurement [,7], 
-        y = measurement [,8],
+  plot (x = ds [,7], 
+        y = ds [,8],
         xlab = 'time [s]',
         ylab = 'CO2 concentration [ppm]')
   # plot selected data bounds
