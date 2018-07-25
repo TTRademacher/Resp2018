@@ -18,43 +18,22 @@ if (file.exists("expdata.rds")) {
     
     date_time<-mysessions[i]
     sessiondata<-calcSession(date_time)
-
-#Combine all sessiondata tables into one big table - "expdata'    
-#--------------------------------------------------------------------------------------#  
       if(i==1){
         expdata <- sessiondata
       }else{
         expdata <- rbind(expdata,sessiondata)
         }
-  }
-  saveRDS("expdata.rds")
+      }
+  saveRDS(expdata, file = "expdata.rds")
 } 
 
 #Plot using dataframe "expdata"
 #--------------------------------------------------------------------------------------#  
 
-#Respiration rates over time
-plot(expdata$timestamp,expdata$flux,pch=19,main="Respiration rates over time")
-  
-#Temperature over time
-plot(expdata$timestamp,expdata$airt.C,pch=19,main="Temperature over time")
 
 #Respiration rates per treatment over time (control = green, chill = blue)
 plot(expdata$timestamp,expdata$flux,pch=1,main="Resp rates over time",
      col=ifelse (expdata$treatment=="chilling", "blue","green"))
-
-#Respiration rate per temperature
-plot(expdata$airt.C,expdata$flux,pch=19,main="Resp rates per temperature",
-     col=ifelse (expdata$treatment=="chilling", "blue","green"))
-  
-  #add trend line
-  model.lin<-lm(expdata$flux~expdata$airt.C)
-  summary(model.lin) #take a look at R2 and p-value
-  abline(model.lin,col="red")
-  
-  model.exp<-lm(log(expdata$flux)~expdata$airt.C)
-  summary(model.exp)
-  abline(model.exp,col="black")
 
 #Plot average respiration rates over time, including standard error
   group<-paste(strftime(expdata$timestamp,"%j"),expdata$treatment)
@@ -70,3 +49,19 @@ plot(expdata$airt.C,expdata$flux,pch=19,main="Resp rates per temperature",
       segments(day[treatment=="chilling"],flux_mean[treatment=="chilling"]-flux_se[treatment=="chilling"],day[treatment=="chilling"],flux_mean[treatment=="chilling"]+flux_se[treatment=="chilling"],col="blue")  
       segments(day[treatment!="chilling"],flux_mean[treatment!="chilling"]-flux_se[treatment!="chilling"],day[treatment!="chilling"],flux_mean[treatment!="chilling"]+flux_se[treatment!="chilling"],col="red")  
     
+      #Temperature over time
+      plot(expdata$timestamp,expdata$airt.C,pch=19,main="Temperature over time")
+      
+      #Respiration rate per temperature
+      plot(expdata$airt.C,expdata$flux,pch=19,main="Resp rates per temperature",
+           col=ifelse (expdata$treatment=="chilling", "blue","green"))
+      
+      #add trend line
+      model.lin<-lm(expdata$flux~expdata$airt.C)
+      summary(model.lin) #take a look at R2 and p-value
+      abline(model.lin,col="red")
+      
+      model.exp<-lm(log(expdata$flux)~expdata$airt.C)
+      summary(model.exp)
+      abline(model.exp,col="black")
+      
