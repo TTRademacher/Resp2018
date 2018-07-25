@@ -3,12 +3,13 @@
 
 #What session do you want to make bounds for? input date and time here:
 #--------------------------------------------------------------------------------------#
-if (!exists ('date_time')) {date_time <- "20180627_0700"}
+if (!exists ('date_time')) {date_time <- "20180625_0500"}
 
 #add libraries, sources, read in necessary files
 #--------------------------------------------------------------------------------------#
 require(segmented); require(tibble)
-setwd ('/Users/bdavis/Documents/GitHub/source/RespChamberProc/')
+path->"/Users/bdavis/Documents/HF REU/My Project/48HR/source/RespChamberProc/"
+setwd(path)
 fileNames <- list.files (pattern = "*.R") [-c (9:10)]
 res <- sapply (fileNames, source); rm (res)
 
@@ -76,6 +77,7 @@ sessiondata<-data.frame(file=myfiles,
                         tree=tree,
                         chamber=chamber,
                         timestamp=timestamp,
+                        session=rep(date_time,length(tree))
                         stringsAsFactors = FALSE)
 
 # Pull appropriate meterological data from the HF website to account for those factors
@@ -106,6 +108,8 @@ met_HF$TIMESTAMP <- as.POSIXct (met_HF$datetime,
                     sessiondata$timestamp[i]),
        xlab = "time [s]", 
        ylab = "CO2 concentration [ppm]")
-  #Sys.sleep(4)
+  Sys.sleep(4)
 }
 #dev.off()
+
+#

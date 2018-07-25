@@ -54,6 +54,7 @@ plot(expdata$airt.C,expdata$flux,pch=19,main="Resp rates per temperature",
   
   model.exp<-lm(log(expdata$flux)~expdata$airt.C)
   summary(model.exp)
+  abline(model.exp,col="black")
 
 #Plot average respiration rates over time, including standard error
   group<-paste(strftime(expdata$timestamp,"%j"),expdata$treatment)
