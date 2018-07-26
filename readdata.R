@@ -13,8 +13,7 @@ setwd("~/Documents/HF REU/My Project/48HR")
 bounds<-read.csv(file = 'SoilResp2018_UpperLower.csv', header = TRUE) 
 
 lowerbound<-bounds[bounds$TIMESTAMP==date_time,seq(2,ncol(bounds),2)]
-upperbound<-bounds[bounds$TIMESTAMP==date_time,seq(3,ncol(bounds),2)] #this is multiplied by a factor of 10 b/c the 'RunTime' needed to be *10 sometimes, in order to exceed the 60 second requirment in the resFit function 
-
+upperbound<-bounds[bounds$TIMESTAMP==date_time,seq(3,ncol(bounds),2)] 
 
 #CHAMBER DIMENTIONS (unique to each chamber)
 

@@ -3,12 +3,12 @@
 
 #What session do you want to make bounds for? input date and time here:
 #--------------------------------------------------------------------------------------#
-if (!exists ('date_time')) {date_time <- "20180625_0500"}
+if (!exists ('date_time')) {date_time <- "20180627_1000"}
 
 #add libraries, sources, read in necessary files
 #--------------------------------------------------------------------------------------#
 require(segmented); require(tibble)
-path->"/Users/bdavis/Documents/HF REU/My Project/48HR/source/RespChamberProc/"
+path<-"/Users/bdavis/Documents/HF REU/My Project/48HR/source/RespChamberProc/"
 setwd(path)
 fileNames <- list.files (pattern = "*.R") [-c (9:10)]
 res <- sapply (fileNames, source); rm (res)
@@ -29,27 +29,28 @@ myfiles<-myfiles[substring(myfiles,1,1)=="G"]
 #--------------------------------------------------------------------------------------#
 for (i in  1:length(myfiles)) {
   myfile<- myfiles[i]
-  if(substr(myfile,1,14)== "G-SoilResp2018"){
-
-     ititle<-"SOIL RESP" 
-     tree<- as.numeric(substring(myfile,16,17))
-     chamber<- as.numeric(substring(myfile,19,19))
-     avgh_cm<- soilH$havg_cm [soilH$chamber == chamber & soilH$tree == tree]
-     radius<- 0.1016 
-   
-    }else if (substr(myfile,1,9)=="G-Exp2018"){
-
-      ititle<-"STEM RESP"
-      tree<- as.numeric(substring(myfile,11,12))
-      chamber<- as.numeric(substring(myfile,16,16))
-      avgh_cm<- stemH$havg_cm [stemH$chamber == chamber & stemH$tree == tree]
-      radius= 0.0508
+  
+    if(substr(myfile,1,14)== "G-SoilResp2018"){
+  
+       ititle<-"SOIL RESP" 
+       tree<- as.numeric(substring(myfile,16,17))
+       chamber<- as.numeric(substring(myfile,19,19))
+       avgh_cm<- soilH$havg_cm [soilH$chamber == chamber & soilH$tree == tree]
+       radius<- 0.1016 
+     
+      }else if (substr(myfile,1,9)=="G-Exp2018"){
+  
+        ititle<-"STEM RESP"
+        tree<- as.numeric(substring(myfile,11,12))
+        chamber<- as.numeric(substring(myfile,16,16))
+        avgh_cm<- stemH$havg_cm [stemH$chamber == chamber & stemH$tree == tree]
+        radius= 0.0508
     }
   #we can also isolate the different variables in using a split function and an indicator
   #strsplit(myfiles,'_')
   
 chamberGeometry <- calcChamberGeometryCylinder (radius = radius,
-                                                  height = avgh_cm, #heights need to vary 
+                                                  height = avgh_cm,
                                                   taper  = 1.0)
 
 
@@ -77,12 +78,12 @@ sessiondata<-data.frame(file=myfiles,
                         tree=tree,
                         chamber=chamber,
                         timestamp=timestamp,
-                        session=rep(date_time,length(tree))
                         stringsAsFactors = FALSE)
 
 # Pull appropriate meterological data from the HF website to account for those factors
 #--------------------------------------------------------------------------------------#
-weatherdate<-paste(substring(datestr[1],1,4),substring(datestr[1],5,6),'01',sep='-')
+weatherdate<-Sys.Date()
+weatherdate<-paste(substring(weatherdate,1,8),'01',sep='')
 
 if (samplingDate < as.POSIXct (weatherdate, format = '%Y-%m-%d')) {
   met_HF <- read.csv (file = url ('http://harvardforest.fas.harvard.edu/sites/harvardforest.fas.harvard.edu/files/data/p00/hf001/hf001-10-15min-m.csv'))
@@ -108,7 +109,7 @@ met_HF$TIMESTAMP <- as.POSIXct (met_HF$datetime,
                     sessiondata$timestamp[i]),
        xlab = "time [s]", 
        ylab = "CO2 concentration [ppm]")
-  Sys.sleep(4)
+  #Sys.sleep(4)
 }
 #dev.off()
 
