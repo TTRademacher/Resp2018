@@ -2,7 +2,7 @@
 
 #what session do you want to look at? 
 #--------------------------------------------------------------------------------------#
-date_time <- "20180719_1300"
+date_time <- "20180626_1300"
 
 calcSession <- function (date_time) {
 #load source preprocess data (including chamber volume and bounds, plotting function)
@@ -10,11 +10,13 @@ calcSession <- function (date_time) {
 require(segmented); require(tibble)
 path<-"~/Documents/GitHub/Resp2018"
 setwd(path); source('readdata.R')
+
+
 path <- paste("~/Documents/HF REU/My Project/48HR/data/",date_time, sep='')
 setwd(path)
 
 myfiles<-list.files(getwd(),"csv")
-myfiles<-myfiles[substring(myfiles,1,14)=="G-SoilResp2018"]
+myfiles<-myfiles[substring(myfiles,1,9)=="G-Exp2018"]
 
 tmp<-unlist(strsplit(myfiles,'_'))
 datestr<-tmp[seq(3,length(tmp),4)]
@@ -22,16 +24,16 @@ timestr<-tmp[seq(4,length(tmp),4)]
 timestr<-substring(timestr,1,nchar(timestr)-4)
 timestamp<-strptime(paste(datestr,timestr),"%Y%m%d %H%M%S")
 
-tree<- as.numeric(substring(myfiles,16,17))
-chamber<- as.numeric(substring(myfiles,19,19))
+tree <- as.numeric(substring(myfiles,11,12))
+chamber <- as.numeric(substring(myfiles,16,16))
 
-while (length (chamber) != length (soilH$chamber)) {
-  index <- which (soilH$chamber != chamber) [1]
-  soilH <- soilH [-index, ]
-  soillowerbound <- soillowerbound [-index]
-  soilupperbound <- soilupperbound [-index]
+while (length (chamber) != length (stemH$chamber)) {
+  index <- which (stemH$tree != tree | stemH$chamber != chamber) [1]
+  stemH <- stemH [-index, ]
+  stemlowerbound <- stemlowerbound [-index]
+  stemupperbound <- stemupperbound [-index]
 }
-avgh_cm<- soilH$havg_cm [soilH$chamber == chamber & soilH$tree == tree]
+avgh_cm<- stemH$havg_cm [stemH$chamber == chamber & stemH$tree == tree]
 radius<- 0.1016 
 
 chamberGeometry <- calcChamberGeometryCylinder (radius = radius,
@@ -39,8 +41,8 @@ chamberGeometry <- calcChamberGeometryCylinder (radius = radius,
                                                 taper  = 1.0)
 
 treatment<-rep("chilling",length(tree)) #name them all 'chilling'
-treatment[tree<=10]<-"compress" #names any tree less than or equal to 10 'compress'
-treatment[tree<=5]<-"control" #names any tree less than or equal to 5 'control'
+treatment[tree>5]<-"compress" #names any tree less than or equal to 10 'compress'
+treatment[tree>10]<-"control" #names any tree less than or equal to 5 'control'
 
 
 #this samplying date will be used to extract the meteoroligical data
@@ -80,14 +82,7 @@ sessiondata$ea.Pa   <- NA
 sessiondata$airt.C  <- NA  
 sessiondata$pres.Pa <- NA 
 sessiondata$H2O.ppt <- NA 
-sessiondata$soilT1.C <- NA
-sessiondata$soilT2.C <- NA
-sessiondata$soilT3.C <- NA
-sessiondata$soilT4.C <- NA
-sessiondata$soilWC1.C <- NA
-sessiondata$soilWC2.C <- NA
-sessiondata$soilWC3.C <- NA
-sessiondata$soilWC4.C <- NA
+
 
 #Loop through each measurement in the session 
 #--------------------------------------------------------------------------------------#
@@ -100,37 +95,21 @@ for (ifile in  1:nrow(sessiondata)){ #the curly bracket starts the loop
   measurement<- read.csv(file = currentfile, header = TRUE, dec = ".")
   
   dat <- selectData (ds= measurement,
-                      lowerBound = soillowerbound[ifile],
-                      upperBound = soilupperbound[ifile]) 
-  title(main = paste("Soil Respiration:",'tree',sessiondata$tree[ifile],'chamber',sessiondata$chamber[ifile],sessiondata$timestamp[ifile]))
+                      lowerBound = stemlowerbound[ifile],
+                      upperBound = stemupperbound[ifile]) 
+  title(main = paste("Stem Respiration:",'tree',sessiondata$tree[ifile],'chamber',sessiondata$chamber[ifile],sessiondata$timestamp[ifile]))
   
-  # to determine which weather measurements to use, we'll find 15 minute interval (consecutive; 12:29 = 12:30, 12:31=12:45)
+  # to determine which weather measurements to use, we'll find the next 15 minute interval 
   next_interval <- as.POSIXct (x = (round (as.numeric (median (sessiondata$timestamp [ifile]))/
                                                (15 * 60)) * (15 * 60) + (15 * 60)), format = '%Y-%m-%d %H:%M:%S',
                              origin = as.POSIXct ("1970-01-01", format = '%Y-%m-%d', tz = 'UTC'), 
                              tz = 'EST')
   
-  
   pres.Pa <- met_HF$bar  [met_HF$TIMESTAMP == next_interval] * 100.0 # Pa
   airt.C  <- met_HF$airt [met_HF$TIMESTAMP == next_interval]         # deg C
   rh.per  <- met_HF$rh   [met_HF$TIMESTAMP == next_interval]         # %
   
-  #to determine which soil temp and moisture to use, find the next 10 minute interval 
-  names (barndata) <- barnNames
-  nextinterval2 <- as.POSIXct (x = (round (as.numeric (median (stemexpdata$timestamp [ifile]))/
-                                            (10 * 60)) * (10 * 60) + (10 * 60)), format = '%Y-%m-%d %H:%M:%S',
-                              origin = as.POSIXct ("1970-01-01", format = '%Y-%m-%d', tz = 'UTC'), 
-                              tz = 'EST')
-  
-  soilT1.C <- barndata$Soil_Temp_C_1 [barndata$TIMESTAMP == nextinterval2]
-  soilT2.C <- barndata$Soil_Temp_C_2 [barndata$TIMESTAMP == nextinterval2]
-  soilT3.C <- barndata$Soil_Temp_C_3 [barndata$TIMESTAMP == nextinterval2]
-  soilT4.C <- barndata$Soil_Temp_C_4 [barndata$TIMESTAMP == nextinterval2]
-  
-  soilWC1.C <- barndata$VWC_1 [barndata$TIMESTAMP == nextinterval2]
-  soilWC2.C <- barndata$VWC_2 [barndata$TIMESTAMP == nextinterval2]
-  soilWC3.C <- barndata$VWC_3 [barndata$TIMESTAMP == nextinterval2]
-  soilWC4.C <- barndata$VWC_4 [barndata$TIMESTAMP == nextinterval2]
+ 
   
   
   
@@ -157,8 +136,8 @@ for (ifile in  1:nrow(sessiondata)){ #the curly bracket starts the loop
                                    colTime     = 'RunTime', # redundant
                                    colTemp     = 'airt.C',
                                    colPressure = 'pres.Pa',
-                                   volume      = soilH$vol_m3[ifile],
-                                   area        = soilH$respArea_m2[ifile])
+                                   volume      = stemH$vol_m3[ifile],
+                                   area        = stemH$respArea_m2[ifile])
   
   #Put all the data into the table 'sessiondata" you created earlier
   #--------------------------------------------------------------------------------------#
@@ -168,19 +147,11 @@ for (ifile in  1:nrow(sessiondata)){ #the curly bracket starts the loop
   sessiondata$ea.Pa[ifile]   <- ea.Pa   # add actual water vapour pressure [Pa] to alldata data.frame
   sessiondata$airt.C[ifile]  <- airt.C   # add air temperature [degC] to alldata data.frame
   sessiondata$pres.Pa[ifile] <- pres.Pa   # add atmospheric pressure [Pa] to aalldat data.frame
-  sessiondata$H2O.ppt[ifile] <- ea.Pa / (pres.Pa - ea.Pa) * 1.0e3 
-  sessiondata$soilT1.C[ifile] <- soilT1.C
-  sessiondata$soilT1.C[ifile] <- soilT1.C
-  sessiondata$soilT1.C[ifile] <- soilT1.C
-  sessiondata$soilT1.C[ifile] <- soilT1.C
-  sessiondata$soilWC1.C[ifile] <- soilWC1.C
-  sessiondata$soilWC2.C[ifile] <- soilWC2.C
-  sessiondata$soilWC3.C[ifile] <- soilWC3.C
-  sessiondata$soilWC4.C[ifile] <- soilWC4.C
+  sessiondata$H2O.ppt[ifile] <- ea.Pa / (pres.Pa - ea.Pa) * 1.0e3   
 }
 
 
-dev.off()
+#dev.off()
 #flux units are micromol/sec. can use conver_mmol function to get grams/day
 
 return (sessiondata)

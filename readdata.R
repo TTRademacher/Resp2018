@@ -10,15 +10,19 @@ res <- sapply (fileNames, source); rm (res)
 
 #LOWER AND UPPERBOUNDS
 setwd("~/Documents/HF REU/My Project/48HR")
-bounds<-read.csv(file = 'SoilResp2018_UpperLower.csv', header = TRUE) 
+soilbounds<-read.csv(file = 'SoilResp2018_UpperLower.csv', header = TRUE) 
+stembounds<-read.csv(file = 'StemResp2018_UpperLower.csv', header = TRUE)
 
-lowerbound<-bounds[bounds$TIMESTAMP==date_time,seq(2,ncol(bounds),2)]
-upperbound<-bounds[bounds$TIMESTAMP==date_time,seq(3,ncol(bounds),2)] 
+soillowerbound<-soilbounds[soilbounds$TIMESTAMP==date_time,seq(2,ncol(soilbounds),2)]
+soilupperbound<-soilbounds[soilbounds$TIMESTAMP==date_time,seq(3,ncol(soilbounds),2)] 
+
+stemlowerbound<-stembounds[stembounds$TIMESTAMP==date_time,seq(2,ncol(stembounds),2)]
+stemupperbound<-stembounds[stembounds$TIMESTAMP==date_time,seq(3,ncol(stembounds),2)] 
 
 #CHAMBER DIMENTIONS (unique to each chamber)
 
 soilH<-read.csv("SoilChamberHeights.csv",header=FALSE) 
-stemH<-read.csv("StemChamberHeights.csv",header=FALSE)
+stemH<- read.csv("StemChamberHeights.csv",header=FALSE)
 names (soilH)<- c("tree",'chamber','h1_cm','h2_cm','h3_cm','h4_cm','havg_cm')
 names (stemH)<- c('tree','chamber','h1_cm','h2_cm','h3_cm','h4_cm','havg_cm')
 soilH$havg_m <- soilH$havg_cm/100
@@ -33,7 +37,7 @@ soilH$respArea_m2 <- rep(calcChamberGeometryCylinder (radius = 0.1016,
                                                            taper  = 1.0) [dim(soilH)[1]+1], length(soilH[,1]))
 
 stemH$vol_m3 <- calcChamberGeometryCylinder (radius = 0.0508,
-                                             height = stemH$havg_m,
+                                             height = stemH$havg_m, 
                                              taper  = 1.0) [-(dim(stemH)[1]+1)] #remove the last value 
 
 stemH$respArea_m2 <- rep(calcChamberGeometryCylinder (radius = 0.0508,

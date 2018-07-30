@@ -3,7 +3,7 @@
 
 #What session do you want to make bounds for? input date and time here:
 #--------------------------------------------------------------------------------------#
-if (!exists ('date_time')) {date_time <- "20180627_1000"}
+if (!exists ('date_time')) {date_time <- "20180626_1300"}
 
 #add libraries, sources, read in necessary files
 #--------------------------------------------------------------------------------------#
@@ -57,8 +57,8 @@ chamberGeometry <- calcChamberGeometryCylinder (radius = radius,
 #Convert the file names into useful, manipulatable variables
 #--------------------------------------------------------------------------------------#
 treatment<-rep("chilling",length(tree)) #name them all 'chilling'
-treatment[tree<=10]<-"compress"
-treatment[tree<=5]<-"control" #name any tree less than or equal to 5 'control'
+treatment[tree>=6]<-"compress"
+treatment[tree>=11]<-"control" #name any tree less than or equal to 5 'control'
 
 tmp<-unlist(strsplit(myfiles,'_'))
 datestr<-tmp[seq(3,length(tmp),4)]
@@ -109,7 +109,7 @@ met_HF$TIMESTAMP <- as.POSIXct (met_HF$datetime,
                     sessiondata$timestamp[i]),
        xlab = "time [s]", 
        ylab = "CO2 concentration [ppm]")
-  #Sys.sleep(4)
+ # Sys.sleep(4)
 }
 #dev.off()
 

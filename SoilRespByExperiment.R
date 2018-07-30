@@ -8,6 +8,11 @@ setwd(path); source('SoilRespBySession.R')
 #--------------------------------------------------------------------------------------#
 setwd("~/Documents/HF REU/My Project/48HR/data")
 mysessions <- list.files()
+mysessions <- mysessions[ !grepl("20180625_0900", mysessions) ] #only stem data
+mysessions <- mysessions[ !grepl("20180626_0900", mysessions) ] #incomplete 
+mysessions <- mysessions[ !grepl("20180713_1300", mysessions) ] #only stem data 
+mysessions <- mysessions[ !grepl("20180720_1300", mysessions) ] #only stem data 
+
 
 #Call upon the calcSession function sourced above to loop through every session
 #--------------------------------------------------------------------------------------#
@@ -30,7 +35,7 @@ if (file.exists("expdata.rds")) {
 #Plot using dataframe "expdata"
 #--------------------------------------------------------------------------------------#  
 
-
+pdf("soilRespRates.pdf")
 #Respiration rates per treatment over time (control = green, chill = blue)
 plot(expdata$timestamp,expdata$flux,pch=1,main="Resp rates over time",
      col=ifelse (expdata$treatment=="chilling", "blue","green"))
@@ -64,4 +69,4 @@ plot(expdata$timestamp,expdata$flux,pch=1,main="Resp rates over time",
       model.exp<-lm(log(expdata$flux)~expdata$airt.C)
       summary(model.exp)
       abline(model.exp,col="black")
-      
+dev.off()
