@@ -5,11 +5,17 @@
 date_time <- "20180719_1300"
 
 calcSession <- function (date_time) {
-#load source preprocess data (including chamber volume and bounds, plotting function)
+#load source preprocess data (including chamber volume, bounds, plotting function)
 #--------------------------------------------------------------------------------------#
 require(segmented); require(tibble)
-path<-"~/Documents/GitHub/Resp2018"
-setwd(path); source('readdata.R')
+setwd("~/Documents/GitHub/Resp2018"); source('readdata.R') 
+
+barndata <- read.csv("Barn_Table.dat",skip=1,header=TRUE)
+barnNames <- names(barndata) 
+barndata <- read.csv("Barn_Table.dat",skip=4,header=FALSE)
+colnames(barndata) <- barnNames
+barndata$TIMESTAMP <- as.POSIXct (barndata$TIMESTAMP, format = '%Y-%m-%d %H:%M:%S', tz = 'EST')
+
 path <- paste("~/Documents/HF REU/My Project/48HR/data/",date_time, sep='')
 setwd(path)
 
@@ -102,7 +108,7 @@ for (ifile in  1:nrow(sessiondata)){ #the curly bracket starts the loop
   dat <- selectData (ds= measurement,
                       lowerBound = soillowerbound[ifile],
                       upperBound = soilupperbound[ifile]) 
-  title(main = paste("Soil Respiration:",'tree',sessiondata$tree[ifile],'chamber',sessiondata$chamber[ifile],sessiondata$timestamp[ifile]))
+  title(main = paste("SOIL Resp:",'tree',sessiondata$tree[ifile],'chamber',sessiondata$chamber[ifile],sessiondata$timestamp[ifile]))
   
   # to determine which weather measurements to use, we'll find 15 minute interval (consecutive; 12:29 = 12:30, 12:31=12:45)
   next_interval <- as.POSIXct (x = (round (as.numeric (median (sessiondata$timestamp [ifile]))/
@@ -116,11 +122,13 @@ for (ifile in  1:nrow(sessiondata)){ #the curly bracket starts the loop
   rh.per  <- met_HF$rh   [met_HF$TIMESTAMP == next_interval]         # %
   
   #to determine which soil temp and moisture to use, find the next 10 minute interval 
-  names (barndata) <- barnNames
-  nextinterval2 <- as.POSIXct (x = (round (as.numeric (median (stemexpdata$timestamp [ifile]))/
+  
+  nextinterval2 <- as.POSIXct (x = (round (as.numeric (median (sessiondata$timestamp [ifile]))/
                                             (10 * 60)) * (10 * 60) + (10 * 60)), format = '%Y-%m-%d %H:%M:%S',
                               origin = as.POSIXct ("1970-01-01", format = '%Y-%m-%d', tz = 'UTC'), 
                               tz = 'EST')
+ 
+  
   
   soilT1.C <- barndata$Soil_Temp_C_1 [barndata$TIMESTAMP == nextinterval2]
   soilT2.C <- barndata$Soil_Temp_C_2 [barndata$TIMESTAMP == nextinterval2]
@@ -170,9 +178,9 @@ for (ifile in  1:nrow(sessiondata)){ #the curly bracket starts the loop
   sessiondata$pres.Pa[ifile] <- pres.Pa   # add atmospheric pressure [Pa] to aalldat data.frame
   sessiondata$H2O.ppt[ifile] <- ea.Pa / (pres.Pa - ea.Pa) * 1.0e3 
   sessiondata$soilT1.C[ifile] <- soilT1.C
-  sessiondata$soilT1.C[ifile] <- soilT1.C
-  sessiondata$soilT1.C[ifile] <- soilT1.C
-  sessiondata$soilT1.C[ifile] <- soilT1.C
+  sessiondata$soilT2.C[ifile] <- soilT2.C
+  sessiondata$soilT3.C[ifile] <- soilT3.C
+  sessiondata$soilT4.C[ifile] <- soilT4.C
   sessiondata$soilWC1.C[ifile] <- soilWC1.C
   sessiondata$soilWC2.C[ifile] <- soilWC2.C
   sessiondata$soilWC3.C[ifile] <- soilWC3.C
