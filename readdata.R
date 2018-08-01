@@ -28,7 +28,7 @@ names (stemH)<- c('tree','chamber','h1_cm','h2_cm','h3_cm','h4_cm','havg_cm')
 soilH$havg_m <- soilH$havg_cm/100
 stemH$havg_m <- stemH$havg_cm/100
 
-soilH$vol_m3 <- calcChamberGeometryCylinder (radius = 0.1016,
+soilH$vol_m3 <- calcChamberGeometryCylinder (radius = 0.1016, #m
                                                   height = soilH$havg_m,
                                                   taper  = 1.0) [-(dim(soilH)[1]+1)] #remove the last value 
 

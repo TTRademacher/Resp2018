@@ -82,11 +82,8 @@ par(mfrow=c(2,2))
   #abline(lm(expdata$soilT1.C[expdata$treatment=="control"]~expdata$flux[expdata$treatment=="control"]))
   
   
-  
-  
 #48 HR exp, treatment-specific average respiration rates over time + standard error
 #--------------------------------------------------------------------------------------#  
-
 group<-paste(expdata$session,expdata$treatment)
 flux_mean<-tapply(expdata$flux,group,mean)
 flux_se<-tapply(expdata$flux,group,sd)/sqrt(tapply(expdata$flux,group,length)) #Standard error
@@ -112,39 +109,77 @@ plot(session,flux_mean,main="Soil Respiration - 48 Consecutive Hours",xlim=xlim,
          lty = 3)
 
 
-  #Treatment-specific, plot average respiration rates over time + standard error
+  #Average respiration rates over time + standard error BY SESSION
 #--------------------------------------------------------------------------------------#  
-  group<-paste(strftime(expdata$timestamp,"%j"),expdata$treatment)
-  flux_mean<-tapply(expdata$flux,group,mean)
-  flux_se<-tapply(expdata$flux,group,sd)/sqrt(tapply(expdata$flux,group,length)) #Standard error
-  tmp<-unlist(strsplit(names(flux_mean)," "))
-  day<-as.numeric(tmp[seq(1,length(tmp),2)])
-  treatment<-tmp[seq(2,length(tmp),2)]
+  group     <- paste(expdata$session,expdata$treatment)
+  flux_mean <- tapply(expdata$flux,group,mean)
+  flux_se   <- tapply(expdata$flux,group,sd)/sqrt(tapply(expdata$flux,group,length)) #Standard error
+  tmp       <- unlist(strsplit(names(flux_mean)," "))
+  treatment <- tmp[seq(2,length(tmp),2)]
+  session   <- tmp[seq(1,length(tmp),2)]
+  session   <- as.POSIXct(session,format="%Y%m%d_%H%M")
+ 
+  xlim <- c(as.POSIXct("20180625_0500",format="%Y%m%d_%H%M"),as.POSIXct( "20180730_1300",format="%Y%m%d_%H%M"))
+  ylim <- c(0,5)
   
-    plot(day,flux_mean,main="Soil Respiration since Chilling",ylab = "Respiration Rate (μmol/sec)",las=1,xlab = "Day of the Year")  
-      lines(day[treatment=="chilling"],flux_mean[treatment=="chilling"],col="#6BAED6",lty=2)  
-      lines(day[treatment!="chilling"],flux_mean[treatment!="chilling"],col="#41ae76")  
-      segments(day[treatment=="chilling"],flux_mean[treatment=="chilling"]-flux_se[treatment=="chilling"],day[treatment=="chilling"],flux_mean[treatment=="chilling"]+flux_se[treatment=="chilling"],col="#6BAED6")  
-      segments(day[treatment!="chilling"],flux_mean[treatment!="chilling"]-flux_se[treatment!="chilling"],day[treatment!="chilling"],flux_mean[treatment!="chilling"]+flux_se[treatment!="chilling"],col="#41ae76")  
-      legend("topright",c("Control","Chilling"),col=c("#41ae76","#6BAED6"),inset=0.02,pch=c(19,1),box.lty = 0)
-      abline(v=as.POSIXct('176', format = '%j'),
-             col='black',
-             lwd = 4,
-             lty = 3)
+  plot(session,flux_mean,main="Soil Respiration Since Chilling",xlim=xlim,ylim=ylim,type="n",las=1,xlab = "Date",ylab = "Respiration Rate (μmol/sec)")  
+    lines(session[treatment=="chilling"],flux_mean[treatment=="chilling"],col="#6BAED6")  
+    lines(session[treatment!="chilling"],flux_mean[treatment!="chilling"],col="#41ae76")
+    points(session[treatment=="chilling"],flux_mean[treatment=="chilling"],col="#6BAED6",pch=1)
+    points(session[treatment!="chilling"],flux_mean[treatment!="chilling"],col="#41ae76",pch=19)  
+    
+    segments(session[treatment=="chilling"],flux_mean[treatment=="chilling"]-flux_se[treatment=="chilling"],session[treatment=="chilling"],flux_mean[treatment=="chilling"]+flux_se[treatment=="chilling"],col="#6BAED6")  
+    segments(session[treatment!="chilling"],flux_mean[treatment!="chilling"]-flux_se[treatment!="chilling"],session[treatment!="chilling"],flux_mean[treatment!="chilling"]+flux_se[treatment!="chilling"],col="#41ae76")  
+    legend("topright",c("Control","Chilling"),col=c("#41ae76","#6BAED6"),inset=0.02,pch=c(19,1),box.lty = 0)
+    abline(v=as.POSIXct('20180625_1300', format = '%Y%m%d_%H%M'),
+           col='black',
+           lwd = 4,
+           lty = 3)
+    
 
-      par (new = T)
-      expdata$POSIXdate <- as.POSIXct(expdata$timestamp, '%Y-%m-%d $H:$M')
-      plot (x = expdata$POSIXdate, y = expdata$flux,
-            col = 'red',
-            type = 'l',
-            xlab = "n",
-            ylab = "n")
+      #par (new = T)
+      #expdata$POSIXdate <- as.POSIXct(expdata$timestamp, '%Y-%m-%d $H:$M')
+      # plot (x = expdata$POSIXdate, y = expdata$flux,
+      #       col = 'red',
+      #       type = 'l',
+      #       xlab = "n",
+      #       ylab = "n")
+
+#Average respiration rates over time + standard error BY DAY
+#--------------------------------------------------------------------------------------#  
+group     <- paste(strftime(expdata$timestamp,"%j"),expdata$treatment)
+flux_mean <- tapply(expdata$flux,group,mean)
+flux_se   <- tapply(expdata$flux,group,sd)/sqrt(tapply(expdata$flux,group,length)) #Standard error
+tmp       <- unlist(strsplit(names(flux_mean)," "))
+treatment <- tmp[seq(2,length(tmp),2)]
+day<-as.numeric(tmp[seq(1,length(tmp),2)])
+
+#xlim <- (176,211)
+ylim <- c(0,5)
+
+plot(day,flux_mean,main="Soil Respiration Since Chilling",ylim=ylim,type="n",las=1,xlab = "Date",ylab = "Respiration Rate (μmol/sec)")  
+lines(day[treatment=="chilling"],flux_mean[treatment=="chilling"],col="#6BAED6")  
+lines(day[treatment!="chilling"],flux_mean[treatment!="chilling"],col="#41ae76")
+points(day[treatment=="chilling"],flux_mean[treatment=="chilling"],col="#FFFFFF",pch=19)
+points(day[treatment=="chilling"],flux_mean[treatment=="chilling"],col="#6BAED6",pch=1)
+points(day[treatment!="chilling"],flux_mean[treatment!="chilling"],col="#41ae76",pch=19)  
+
+segments(day[treatment=="chilling"],flux_mean[treatment=="chilling"]-flux_se[treatment=="chilling"],day[treatment=="chilling"],flux_mean[treatment=="chilling"]+flux_se[treatment=="chilling"],col="#6BAED6")  
+segments(day[treatment!="chilling"],flux_mean[treatment!="chilling"]-flux_se[treatment!="chilling"],day[treatment!="chilling"],flux_mean[treatment!="chilling"]+flux_se[treatment!="chilling"],col="#41ae76")  
+legend("topright",c("Control","Chilling"),col=c("#41ae76","#6BAED6"),inset=0.02,pch=c(19,1),box.lty = 0)
+abline(v=176.546,
+       col='black',
+       lwd = 4,
+       lty = 3)
         
-      
       
 #Adjusting for (air) temperature
 #--------------------------------------------------------------------------------------#  
-      for (tree in sort(unique(expdata$tree))){
+      colors<-  ifelse (expdata$treatment=="chilling", "blue","green")
+      
+      plot(expdata$airt.C,log(expdata$flux),pch=19,main="Resp rates per temperature",
+           col=colors) 
+     for (tree in sort(unique(expdata$tree))){
         ord<-order(expdata$airt.C[expdata$tree==tree])
         lines(expdata$airt.C[expdata$tree==tree][ord],log(expdata$flux[expdata$tree==tree][ord]))
         model<-lm(log(expdata$flux[expdata$tree==tree])~expdata$airt.C[expdata$tree==tree])
@@ -159,4 +194,43 @@ plot(session,flux_mean,main="Soil Respiration - 48 Consecutive Hours",xlim=xlim,
       summary(model)
       expdata$flux_tc<- exp(log(expdata$flux) -(expdata$airt.C-20)*coefficients(model)[2])
 
-#dev.off()
+    #plot
+      plot(expdata$airt.C[expdata$treatment=="control"],expdata$flux[expdata$treatment=="control"],pch=19,main="Control Resp Rates per Temp",las=1,col=colors[expdata$treatment=="control"]) 
+      lines(seq(0,40,0.1),exp(coefficients(model)[2]*seq(0,40,0.1)+coefficients(model)[1]),lwd=2,col="red")
+      model_chill<-lm(log(expdata$flux[expdata$treatment!="control"])~expdata$airt.C[expdata$treatment!="control"])
+      
+    #plot
+      plot(expdata$airt.C[expdata$treatment=="control"],expdata$flux[expdata$treatment=="control"],pch=19,main="Resp rates per temperature",las=1,col=colors[expdata$treatment=="control"]) 
+      lines(seq(0,40,0.1),exp(coefficients(model)[2]*seq(0,40,0.1)+coefficients(model)[1]),lwd=2,col="red")
+    #plot
+      plot(expdata$airt.C,expdata$flux,pch=19,main="Control + Chilled: Resp Rates per Temperature",
+           col=colors) 
+      lines(seq(0,40,0.1),exp(coefficients(model)[2]*seq(0,40,0.1)+coefficients(model)[1]),lwd=2,col="red")
+      lines(seq(0,40,0.1),exp(coefficients(model_chill)[2]*seq(0,40,0.1)+coefficients(model_chill)[1]),lwd=2,lty=2,col="red")
+      
+#Apply air temperature corrected flux BY DAY 
+#--------------------------------------------------------------------------------------#  
+      group     <- paste(strftime(expdata$timestamp,"%j"),expdata$treatment)
+      flux_mean <- tapply(expdata$flux_tc,group,mean)
+      flux_se   <- tapply(expdata$flux_tc,group,sd)/sqrt(tapply(expdata$flux_tc,group,length)) #Standard error
+      tmp       <- unlist(strsplit(names(flux_mean)," "))
+      treatment <- tmp[seq(2,length(tmp),2)]
+      day       <- as.numeric(tmp[seq(1,length(tmp),2)])
+      
+      #xlim <- (176,211)
+      ylim <- c(0,5)
+      
+      plot(day,flux_mean,main="Soil Respiration Since Chilling",ylim=ylim,type="n",las=1,xlab = "Day of the Year",ylab = "Respiration Rate (μmol/sec)")  
+      lines(day[treatment=="chilling"],flux_mean[treatment=="chilling"],col="#6BAED6")  
+      lines(day[treatment!="chilling"],flux_mean[treatment!="chilling"],col="#41ae76")
+      points(day[treatment=="chilling"],flux_mean[treatment=="chilling"],col="#FFFFFF",pch=19)
+      points(day[treatment=="chilling"],flux_mean[treatment=="chilling"],col="#6BAED6",pch=1)
+      points(day[treatment!="chilling"],flux_mean[treatment!="chilling"],col="#41ae76",pch=19)  
+      
+      segments(day[treatment=="chilling"],flux_mean[treatment=="chilling"]-flux_se[treatment=="chilling"],day[treatment=="chilling"],flux_mean[treatment=="chilling"]+flux_se[treatment=="chilling"],col="#6BAED6")  
+      segments(day[treatment!="chilling"],flux_mean[treatment!="chilling"]-flux_se[treatment!="chilling"],day[treatment!="chilling"],flux_mean[treatment!="chilling"]+flux_se[treatment!="chilling"],col="#41ae76")  
+      legend("topright",c("Control","Chilling"),col=c("#41ae76","#6BAED6"),inset=0.02,pch=c(19,1),box.lty = 0)
+      abline(v=176.546,
+             col='black',
+             lwd = 4,
+             lty = 3)
