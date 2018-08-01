@@ -24,6 +24,8 @@ mysessions <- mysessions[ !grepl("20180627_0700", mysessions) ]
 mysessions <- mysessions[ !grepl("20180629_1300", mysessions) ] #only soil
 mysessions <- mysessions[ !grepl("20180712_1300", mysessions) ] #only soil
 mysessions <- mysessions[ !grepl("20180719_1300", mysessions) ] #only soil
+mysessions <- mysessions[ !grepl("20180730_1300", mysessions) ] #only soil
+
 #Call upon the calcSession function sourced above to loop through every session
 #--------------------------------------------------------------------------------------#
 if (file.exists("stemexpdata.rds")) {
@@ -43,131 +45,65 @@ if (file.exists("stemexpdata.rds")) {
 } 
 
 
-
-
-#VWC = soil moisture, EC = electric conductivity 
-
 #Plot using dataframe "stemexpdata"
 #--------------------------------------------------------------------------------------#  
 
 #pdf("stemRespRates.pdf")
 
-#Plot average respiration rates over time, including standard error
+session_treatment <- paste(stemexpdata$session,stemexpdata$treatment)
 
-group2 <- paste(stemexpdata$session,stemexpdata$treatment)
-flux_mean2 <- tapply(stemexpdata$flux,group2, mean) 
-flux_se2<-tapply(stemexpdata$flux,group2,sd)/sqrt(tapply(stemexpdata$flux,group2,length)) #Standard error
-tmp <- unlist(strsplit(names(flux_mean2)," "))
-session<-tmp[seq(1,length(tmp),2)]
-session<-as.POSIXct(session,format="%Y%m%d_%H%M")
-treatment<-tmp[seq(2,length(tmp),2)]
-
-xlim<-c(as.POSIXct("20180625",format="%Y%m%d"),as.POSIXct("20180720",format="%Y%m%d"))
-ylim<-c(0,0.015)
-    plot(session,flux_mean2,main="Avg stem resp rates over time",xlim=xlim,ylim=ylim)  
-      lines(session[treatment=="chilling"],flux_mean2[treatment=="chilling"],col="blue")  
-      lines(session[treatment=="control"],flux_mean2[treatment=="control"],col="green")
-      lines(session[treatment=="compress"],flux_mean2[treatment=="compress"],col="red")  
-      segments(session[treatment=="chilling"],flux_mean2[treatment=="chilling"]-flux_se2[treatment=="chilling"],session[treatment=="chilling"],flux_mean2[treatment=="chilling"]+flux_se2[treatment=="chilling"],col="blue")  
-      segments(session[treatment=="compress"],flux_mean2[treatment=="compress"]-flux_se2[treatment=="compress"],session[treatment=="compress"],flux_mean2[treatment=="compress"]+flux_se2[treatment=="compress"],col="red")  
-      segments(session[treatment=="control"],flux_mean2[treatment=="control"]-flux_se2[treatment=="control"],session[treatment=="control"],flux_mean2[treatment=="control"]+flux_se2[treatment=="control"],col="green")  
-
-#isolate chamber #2
+#isolate chamber #1
+    fluxch    <- stemexpdata$flux [stemexpdata$chamber == 1]
+    group     <- session_treatment [stemexpdata$chamber == 1]
+    flux_se   <- tapply(fluxch,group,sd)/sqrt(tapply(fluxch,group,length)) #Standard error
+    flux_mean <- tapply(fluxch, group, mean) 
+     
+    #For just the initial 48 HR experiment, write in these parameters:
+      #xlim<-c(as.POSIXct("20180625",format="%Y%m%d"),as.POSIXct("20180720",format="%Y%m%d"))
+      ylim<-c(0,0.050)
     
-    fluxch2 <- stemexpdata$flux [stemexpdata$chamber == 2]
-    group <- group2 [stemexpdata$chamber == 2]
-    flux_se<-tapply(fluxch2,group,sd)/sqrt(tapply(fluxch2,group,length)) #Standard error
-    flux_mean <- tapply(fluxch2, group, mean) 
-    
-    xlim<-c(as.POSIXct("20180625",format="%Y%m%d"),as.POSIXct("20180627",format="%Y%m%d"))
-    ylim<-c(0,0.015)  
+    plot(session,flux_mean,main="Average Stem Respiration",ylim=ylim) #xlim=xlim, )  
+      lines(session_treatment[treatment=="chilling"],flux_mean[treatment=="chilling"],col="blue")  
+      lines(session_treatment[treatment=="control"],flux_mean[treatment=="control"],col="green")
+      lines(session_treatment[treatment=="compress"],flux_mean[treatment=="compress"],col="red")  
+      segments(session_treatment[treatment=="chilling"],flux_mean[treatment=="chilling"]-flux_se[treatment=="chilling"],session_treatment[treatment=="chilling"],flux_mean[treatment=="chilling"]+flux_se[treatment=="chilling"],col="blue")  
+      segments(session_treatment[treatment=="compress"],flux_mean[treatment=="compress"]-flux_se[treatment=="compress"],session_treatment[treatment=="compress"],flux_mean[treatment=="compress"]+flux_se[treatment=="compress"],col="red")  
+      segments(session_treatment[treatment=="control"],flux_mean[treatment=="control"]-flux_se[treatment=="control"],session_treatment[treatment=="control"],flux_mean[treatment=="control"]+flux_se[treatment=="control"],col="green")  
         
-    plot(session,flux_mean,main="CH 2 Avg stem resp rates over time",xlim=xlim,ylim=ylim)  
-    lines(session[treatment=="chilling"],flux_mean[treatment=="chilling"],col="blue")  
-    lines(session[treatment=="control"],flux_mean[treatment=="control"],col="green")
-    lines(session[treatment=="compress"],flux_mean[treatment=="compress"],col="red")  
-    segments(session[treatment=="chilling"],flux_mean[treatment=="chilling"]-flux_se[treatment=="chilling"],session[treatment=="chilling"],flux_mean[treatment=="chilling"]+flux_se[treatment=="chilling"],col="blue")  
-    segments(session[treatment=="compress"],flux_mean[treatment=="compress"]-flux_se[treatment=="compress"],session[treatment=="compress"],flux_mean[treatment=="compress"]+flux_se[treatment=="compress"],col="red")  
-    segments(session[treatment=="control"],flux_mean[treatment=="control"]-flux_se[treatment=="control"],session[treatment=="control"],flux_mean[treatment=="control"]+flux_se[treatment=="control"],col="green")  
-    
-    #isolate chamber #1
-    
-    fluxch1 <- stemexpdata$flux [stemexpdata$chamber == 1]
-    group1 <- group2 [stemexpdata$chamber == 1]
-    flux_se1<-tapply(fluxch1,group1,sd)/sqrt(tapply(fluxch1,group1,length)) #Standard error
-    flux_mean1 <- tapply(fluxch1, group1, mean) 
-    
-  
-    xlim<-c(as.POSIXct("20180625",format="%Y%m%d"),as.POSIXct("20180627",format="%Y%m%d"))
-    ylim<-c(0,0.020)  
-    
-  
-    plot(session,flux_mean1,main="CH 1 Avg stem resp rates over time near start",xlim=xlim, ylim=ylim)  
-    lines(session[treatment=="chilling"],flux_mean1[treatment=="chilling"],col="blue")  
-    lines(session[treatment=="control"],flux_mean1[treatment=="control"],col="green")
-    lines(session[treatment=="compress"],flux_mean1[treatment=="compress"],col="red")  
-    segments(session[treatment=="chilling"],flux_mean1[treatment=="chilling"]-flux_se1[treatment=="chilling"],session[treatment=="chilling"],flux_mean1[treatment=="chilling"]+flux_se1[treatment=="chilling"],col="blue")  
-    segments(session[treatment=="compress"],flux_mean1[treatment=="compress"]-flux_se1[treatment=="compress"],session[treatment=="compress"],flux_mean1[treatment=="compress"]+flux_se1[treatment=="compress"],col="red")  
-    segments(session[treatment=="control"],flux_mean1[treatment=="control"]-flux_se1[treatment=="control"],session[treatment=="control"],flux_mean1[treatment=="control"]+flux_se1[treatment=="control"],col="green")  
-    
-    
-##############
-    #isolate chamber #1
-    
-    fluxch1 <- stemexpdata$flux [stemexpdata$chamber == 1]
-    group1 <- group2 [stemexpdata$chamber == 1]
-    flux_se1<-tapply(fluxch1,group1,sd)/sqrt(tapply(fluxch1,group1,length)) #Standard error
-    flux_mean1 <- tapply(fluxch1, group1, mean) 
-    
-    
-    xlim<-c(as.POSIXct("20180625",format="%Y%m%d"),as.POSIXct("20180720",format="%Y%m%d"))
-    ylim<-c(0,0.050)  
-    
-    
-    plot(session,flux_mean1,main="CH 1 Avg stem resp rates over time near start",xlim=xlim, ylim=ylim)  
-    lines(session[treatment=="chilling"],flux_mean1[treatment=="chilling"],col="blue")  
-    lines(session[treatment=="control"],flux_mean1[treatment=="control"],col="green")
-    lines(session[treatment=="compress"],flux_mean1[treatment=="compress"],col="red")  
-    segments(session[treatment=="chilling"],flux_mean1[treatment=="chilling"]-flux_se1[treatment=="chilling"],session[treatment=="chilling"],flux_mean1[treatment=="chilling"]+flux_se1[treatment=="chilling"],col="blue")  
-    segments(session[treatment=="compress"],flux_mean1[treatment=="compress"]-flux_se1[treatment=="compress"],session[treatment=="compress"],flux_mean1[treatment=="compress"]+flux_se1[treatment=="compress"],col="red")  
-    segments(session[treatment=="control"],flux_mean1[treatment=="control"]-flux_se1[treatment=="control"],session[treatment=="control"],flux_mean1[treatment=="control"]+flux_se1[treatment=="control"],col="green")  
-    
-    #isolate chamber #2
-    
-    fluxch1 <- stemexpdata$flux [stemexpdata$chamber == 2]
-    group1 <- group2 [stemexpdata$chamber == 2]
-    flux_se1<-tapply(fluxch1,group1,sd)/sqrt(tapply(fluxch1,group1,length)) #Standard error
-    flux_mean1 <- tapply(fluxch1, group1, mean) 
-    
-    
-    
-    #plot(session,flux_mean1,main="CH 1 Avg stem resp rates over time near start",xlim=xlim, ylim=ylim)  
-    lines(session[treatment=="chilling"],flux_mean1[treatment=="chilling"],col="blue",lty=2)  
-    lines(session[treatment=="control"],flux_mean1[treatment=="control"],col="green",lty=2)
-    lines(session[treatment=="compress"],flux_mean1[treatment=="compress"],col="red",lty=2)  
-    segments(session[treatment=="chilling"],flux_mean1[treatment=="chilling"]-flux_se1[treatment=="chilling"],session[treatment=="chilling"],flux_mean1[treatment=="chilling"]+flux_se1[treatment=="chilling"],col="blue")  
-    segments(session[treatment=="compress"],flux_mean1[treatment=="compress"]-flux_se1[treatment=="compress"],session[treatment=="compress"],flux_mean1[treatment=="compress"]+flux_se1[treatment=="compress"],col="red")  
-    segments(session[treatment=="control"],flux_mean1[treatment=="control"]-flux_se1[treatment=="control"],session[treatment=="control"],flux_mean1[treatment=="control"]+flux_se1[treatment=="control"],col="green")  
-    
-    #isolate chamber #3
-    
-    fluxch1 <- stemexpdata$flux [stemexpdata$chamber == 3]
-    group1 <- group2 [stemexpdata$chamber == 3]
-    flux_se1<-tapply(fluxch1,group1,sd)/sqrt(tapply(fluxch1,group1,length)) #Standard error
-    flux_mean1 <- tapply(fluxch1, group1, mean) 
-  
-    
-    #plot(session,flux_mean1,main="CH 1 Avg stem resp rates over time near start",xlim=xlim, ylim=ylim)  
-    lines(session[treatment=="chilling"],flux_mean1[treatment=="chilling"],col="blue",lty=3)  
-    lines(session[treatment=="control"],flux_mean1[treatment=="control"],col="green",lty=3)
-    lines(session[treatment=="compress"],flux_mean1[treatment=="compress"],col="red",lty=3)  
-    segments(session[treatment=="chilling"],flux_mean1[treatment=="chilling"]-flux_se1[treatment=="chilling"],session[treatment=="chilling"],flux_mean1[treatment=="chilling"]+flux_se1[treatment=="chilling"],col="blue")  
-    segments(session[treatment=="compress"],flux_mean1[treatment=="compress"]-flux_se1[treatment=="compress"],session[treatment=="compress"],flux_mean1[treatment=="compress"]+flux_se1[treatment=="compress"],col="red")  
-    segments(session[treatment=="control"],flux_mean1[treatment=="control"]-flux_se1[treatment=="control"],session[treatment=="control"],flux_mean1[treatment=="control"]+flux_se1[treatment=="control"],col="green")  
-    
-    
-    
       
+  #isolate chamber #2
+    fluxch    <- stemexpdata$flux [stemexpdata$chamber == 2]
+    group     <- session_treatment [stemexpdata$chamber == 2]
+    flux_se   <- tapply(fluxch,group,sd)/sqrt(tapply(fluxch,group,length))
+    flux_mean <- tapply(fluxch, group, mean) 
+    
+    #plot(session,flux_mean,main="Average Stem Respiration",ylim=ylim) #xlim=xlim, )  
+      lines(session[treatment=="chilling"],flux_mean[treatment=="chilling"],col="blue",lty=2)  
+      lines(session[treatment=="control"],flux_mean[treatment=="control"],col="green",lty=2)
+      lines(session[treatment=="compress"],flux_mean[treatment=="compress"],col="red",lty=2)  
+      segments(session[treatment=="chilling"],flux_mean[treatment=="chilling"]-flux_se[treatment=="chilling"],session[treatment=="chilling"],flux_mean[treatment=="chilling"]+flux_se[treatment=="chilling"],col="blue")  
+      segments(session[treatment=="compress"],flux_mean[treatment=="compress"]-flux_se[treatment=="compress"],session[treatment=="compress"],flux_mean[treatment=="compress"]+flux_se[treatment=="compress"],col="red")  
+      segments(session[treatment=="control"],flux_mean[treatment=="control"]-flux_se[treatment=="control"],session[treatment=="control"],flux_mean[treatment=="control"]+flux_se[treatment=="control"],col="green")  
+    
+  #isolate chamber #3
+    fluxch    <- stemexpdata$flux [stemexpdata$chamber == 3]
+    group     <- session_treatment [stemexpdata$chamber == 3]
+    flux_se   <- tapply(fluxch,group,sd)/sqrt(tapply(fluxch,group,length))
+    flux_mean <- tapply(fluxch, group, mean) 
+  
+    
+    #plot(session,flux_mean,main="Average Stem Respiration",ylim=ylim) #xlim=xlim, )  
+      lines(session[treatment=="chilling"],flux_mean[treatment=="chilling"],col="blue",lty=3)  
+      lines(session[treatment=="control"],flux_mean[treatment=="control"],col="green",lty=3)
+      lines(session[treatment=="compress"],flux_mean[treatment=="compress"],col="red")  
+      segments(session[treatment=="chilling"],flux_mean[treatment=="chilling"]-flux_se[treatment=="chilling"],session[treatment=="chilling"],flux_mean[treatment=="chilling"]+flux_se[treatment=="chilling"],col="blue")  
+      segments(session[treatment=="compress"],flux_mean[treatment=="compress"]-flux_se[treatment=="compress"],session[treatment=="compress"],flux_mean[treatment=="compress"]+flux_se[treatment=="compress"],col="red")  
+      segments(session[treatment=="control"],flux_mean[treatment=="control"]-flux_se[treatment=="control"],session[treatment=="control"],flux_mean[treatment=="control"]+flux_se[treatment=="control"],col="green") 
+    
+      legend("top", c("Control", "Compress", "Chilling", "Chamber 1", "Chamber 2", "Chamber 3"), horiz=TRUE)
+      
+#--------------------------------------------------------------------------------------#  
+    
 
       #Temperature over time
       plot(stemexpdata$timestamp,stemexpdata$airt.C,pch=19,main="Temperature over time")
@@ -179,7 +115,8 @@ ylim<-c(0,0.015)
            col=colors)
     
       plot(stemexpdata$airt.C,log(stemexpdata$flux),pch=19,main="Resp rates per temperature",
-           col=colors)
+           col=colors)  
+#--------------------------------------------------------------------------------------#  
       
       for (tree in sort(unique(stemexpdata$tree))){
         #ord<-order(stemexpdata$airt.C[stemexpdata$tree==tree])
@@ -194,12 +131,13 @@ ylim<-c(0,0.015)
       #model<-lm(log(stemexpdata$flux[stemexpdata$treatment=="control"])~stemexpdata$airt.C[stemexpdata$treatment=="control"])
       abline(model,lwd=5)
       summary(model)
-      stemexpdata$flux_tc<- exp(log(stemexpdata$flux) -(stemexpdata$airt.C-20)*coefficients(model)[2])
+      stemexpdata$flux_tc<- exp(log(stemexpdata$flux) -(stemexpdata$airt.C-20)*coefficients(model)[2]) #20C is our chosen base T
 
       plot(stemexpdata$airt.C,stemexpdata$flux_tc,pch=19,main="Resp rates per temperature",col=colors)
+    
+#Now, account for temperature when plotting by chamber 
+#--------------------------------------------------------------------------------------#  
       
-      
-#########
       #isolate chamber #1
       
       fluxch1 <- stemexpdata$flux_tc [stemexpdata$chamber == 1]
@@ -221,7 +159,6 @@ ylim<-c(0,0.015)
       segments(session[treatment=="control"],flux_mean1[treatment=="control"]-flux_se1[treatment=="control"],session[treatment=="control"],flux_mean1[treatment=="control"]+flux_se1[treatment=="control"],col="green")  
       
       #isolate chamber #2
-      
       fluxch1 <- stemexpdata$flux_tc [stemexpdata$chamber == 2]
       group1 <- group2 [stemexpdata$chamber == 2]
       flux_se1<-tapply(fluxch1,group1,sd)/sqrt(tapply(fluxch1,group1,length)) #Standard error
@@ -244,7 +181,7 @@ ylim<-c(0,0.015)
       flux_se1<-tapply(fluxch1,group1,sd)/sqrt(tapply(fluxch1,group1,length)) #Standard error
       flux_mean1 <- tapply(fluxch1, group1, mean) 
       
-      
+#--------------------------------------------------------------------------------------#   
       #plot(session,flux_mean1,main="CH 1 Avg stem resp rates over time near start",xlim=xlim, ylim=ylim)  
       lines(session[treatment=="chilling"],flux_mean1[treatment=="chilling"],col="blue",lty=3)  
       lines(session[treatment=="control"],flux_mean1[treatment=="control"],col="green",lty=3)
@@ -255,15 +192,4 @@ ylim<-c(0,0.015)
       
       
       
-      #add trend line
-      model.lin<-lm(stemexpdata$flux~stemexpdata$airt.C)
-      summary(model.lin) #take a look at R2 and p-value
-      abline(model.lin,col="red")
-      
-      model.exp<-lm(log(stemexpdata$flux)~stemexpdata$airt.C)
-      summary(model.exp)
-      abline(model.exp,col="black")
 dev.off()
-
-#Q10 temperature coeefiecient ->> 
-#moisture content regression model 

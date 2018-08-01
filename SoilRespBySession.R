@@ -2,7 +2,7 @@
 
 #what session do you want to look at? 
 #--------------------------------------------------------------------------------------#
-date_time <- "20180719_1300"
+date_time <- "20180730_1300"
 
 calcSession <- function (date_time) {
 #load source preprocess data (including chamber volume, bounds, plotting function)
@@ -10,9 +10,9 @@ calcSession <- function (date_time) {
 require(segmented); require(tibble)
 setwd("~/Documents/GitHub/Resp2018"); source('readdata.R') 
 
-barndata <- read.csv("Barn_Table.dat",skip=1,header=TRUE)
+barndata <- read.csv("Barn_TableTot.dat",skip=1,header=TRUE)
 barnNames <- names(barndata) 
-barndata <- read.csv("Barn_Table.dat",skip=4,header=FALSE)
+barndata <- read.csv("Barn_TableTot.dat",skip=4,header=FALSE)
 colnames(barndata) <- barnNames
 barndata$TIMESTAMP <- as.POSIXct (barndata$TIMESTAMP, format = '%Y-%m-%d %H:%M:%S', tz = 'EST')
 
@@ -45,8 +45,8 @@ chamberGeometry <- calcChamberGeometryCylinder (radius = radius,
                                                 taper  = 1.0)
 
 treatment<-rep("chilling",length(tree)) #name them all 'chilling'
-treatment[tree<=10]<-"compress" #names any tree less than or equal to 10 'compress'
-treatment[tree<=5]<-"control" #names any tree less than or equal to 5 'control'
+treatment[tree>5]<-"compress" #names any tree less than or equal to 10 'compress'
+treatment[tree>10]<-"control" #names any tree less than or equal to 5 'control'
 
 
 #this samplying date will be used to extract the meteoroligical data
