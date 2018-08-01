@@ -1,0 +1,2 @@
+Instrument,Operator Name,Site Name,Sample ID,Temperature,Comments,Time and Date,Longitude,Latitude,Elevation,R Squared,Regression Slope,Standard Error,X Start Range,X End Range,AppVersion
+LI820,Brooklynn Davis,SoilResp2018,11p1,16.5,NA,20180628_141619,-72.18923371,42.5358496,344.0,NaN,NaN,NaN,2018.0000,2018.0000,0.9.1

@@ -1,0 +1,4 @@
+load("/Users/bdavis/Documents/HF REU/My Project/48HR/data/20180720_1300/stemexpdata.rds")
+load("/Users/bdavis/Documents/HF REU/My Project/48HR/data/20180720_1300/stemexpdata.rds")
+read.csv("/Users/bdavis/Documents/HF REU/My Project/48HR/data/20180720_1300/stemexpdata.rds")
+read.csv("/Users/bdavis/Documents/HF REU/My Project/48HR/data/20180720_1300/stemexpdata.rds",header=TRUE)

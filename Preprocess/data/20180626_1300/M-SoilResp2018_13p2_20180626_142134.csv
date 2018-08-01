@@ -1,0 +1,2 @@
+Instrument,Operator Name,Site Name,Sample ID,Temperature,Comments,Time and Date,Longitude,Latitude,Elevation,R Squared,Regression Slope,Standard Error,X Start Range,X End Range,AppVersion
+LI820,Orenna Brand and Emory Ellis,SoilResp2018,13p2,NA,NA,20180626_142134,-72.18913677,42.53627699,325.0,NaN,NaN,NaN,2018.0000,2018.0000,0.9.1

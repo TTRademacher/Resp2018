@@ -1,0 +1,2 @@
+Instrument,Operator Name,Site Name,Sample ID,Temperature,Comments,Time and Date,Longitude,Latitude,Elevation,R Squared,Regression Slope,Standard Error,X Start Range,X End Range,AppVersion
+unknown,Kyle Wyche,SoilResp2018,15p1,15.1,NA,20180627_115219,-72.18917061,42.53627175,349.0,NaN,NaN,NaN,2018.0000,2018.0000,0.9.1

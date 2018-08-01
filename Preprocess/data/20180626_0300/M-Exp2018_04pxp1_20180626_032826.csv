@@ -1,0 +1,3 @@
+Instrument,Operator Name,Site Name,Sample ID,Temperature,Comments,Time and Date,Longitude,Latitude,Elevation,R Squared,Regression Slope,Standard Error,X Start Range,X End Range,AppVersion
+LI840>
+<LI840><DATA><CELLTEMP>5.1,Brooklynn Davis,Exp2018,04pxp1,NA,NA,20180626_032826,NA,NA,NA,NaN,NaN,NaN,2018.0000,2018.0000,0.9.1

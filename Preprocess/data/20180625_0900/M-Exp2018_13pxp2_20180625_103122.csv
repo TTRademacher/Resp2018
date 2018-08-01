@@ -1,0 +1,2 @@
+Instrument,Operator Name,Site Name,Sample ID,Temperature,Comments,Time and Date,Longitude,Latitude,Elevation,R Squared,Regression Slope,Standard Error,X Start Range,X End Range,AppVersion
+LI840,Tim Rademacher,Exp2018,13pxp2,NA,NA,20180625_103122,-72.18917638,42.53618729,327.0,NaN,NaN,NaN,2018.0000,2018.0000,0.9.1

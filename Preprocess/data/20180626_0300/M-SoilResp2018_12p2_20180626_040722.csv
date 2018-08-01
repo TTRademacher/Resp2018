@@ -1,0 +1,2 @@
+Instrument,Operator Name,Site Name,Sample ID,Temperature,Comments,Time and Date,Longitude,Latitude,Elevation,R Squared,Regression Slope,Standard Error,X Start Range,X End Range,AppVersion
+LI820,David Basler,SoilResp2018,12p2,NA,NA,20180626_040722,-72.18918076,42.53616991,332.0,NaN,NaN,NaN,2018.0000,2018.0000,0.9.1
